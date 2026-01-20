@@ -1,0 +1,313 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative Shapes */
+.decorativeShape1 {
+  position: absolute;
+  width: 251px;
+  height: 685px;
+  background: #7d0005;
+  left: 56.25%;
+  top: 339px;
+  z-index: 1;
+}
+
+.decorativeShape2 {
+  position: absolute;
+  width: 415px;
+  height: 222px;
+  background: #fa7560;
+  left: 75%;
+  top: 832px;
+  z-index: 1;
+}
+
+.decorativeShape3 {
+  position: absolute;
+  width: 304px;
+  height: 222px;
+  background: #fa7560;
+  left: 81.25%;
+  top: 832px;
+  z-index: 1;
+}
+
+.decorativeShape4 {
+  position: absolute;
+  width: 241px;
+  height: 363px;
+  background: #dc0005;
+  left: 37.5%;
+  top: 691px;
+  z-index: 1;
+}
+
+/* Tagline Box */
+.taglineBox {
+  position: absolute;
+  left: 75%;
+  top: 339px;
+  width: 284px;
+  background: #ffe8e2;
+  padding: 16px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.taglineText {
+  font-size: var(--font-size-h3);
+  font-weight: 500;
+  color: #0d1b1e;
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Login Card */
+.card {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 0;
+  width: 500px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.23), 0 16px 48px 0 rgba(0, 0, 0, 0.35);
+  margin-left: 86px;
+  z-index: 20;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  align-items: center;
+  padding: 119px 63px;
+}
+
+/* Heading */
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.title {
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  color: black;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.subtitle {
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  color: #8b8d97;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Error Message */
+.error {
+  background: #fef2f2;
+  color: #dc0005;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: var(--font-size-helptext);
+  border: 1px solid #fecaca;
+  text-align: center;
+  width: 100%;
+  max-width: 375px;
+  box-sizing: border-box;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Input Fields Group */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  width: 375px;
+  gap: 0;
+}
+
+.label {
+  font-family: 'SF Pro', sans-serif;
+  font-size: var(--font-size-helptext);
+  font-weight: 400;
+  color: #525252;
+  margin-bottom: 8px;
+  letter-spacing: 0.32px;
+  display: block;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 15px 16px;
+  border: none;
+  border-bottom: 1px solid #8d8d8d;
+  background: #f4f4f4;
+  font-family: 'SF Pro', sans-serif;
+  font-size: var(--font-size-helptext);
+  color: #0d1b1e;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: #9b9898;
+}
+
+.input:focus {
+  outline: none;
+  background: #fafafa;
+  border-bottom-color: #dc0005;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Password Input */
+.passwordWrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #f4f4f4;
+  border: none;
+  border-bottom: 1px solid #8d8d8d;
+  box-sizing: border-box;
+}
+
+.passwordInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'SF Pro', sans-serif;
+  font-size: var(--font-size-helptext);
+  color: #0d1b1e;
+  outline: none;
+}
+
+.passwordInput::placeholder {
+  color: #9b9898;
+}
+
+.passwordInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.eyeIcon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-h3);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9b9898;
+  transition: opacity 0.2s ease;
+}
+
+.eyeIcon:hover:not(:disabled) {
+  opacity: 0.7;
+}
+
+.eyeIcon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Forgot Password */
+.forgotPassword {
+  background: none;
+  border: none;
+  color: #dc0005;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  font-family: 'SF Pro', sans-serif;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.forgotPassword:hover {
+  opacity: 0.8;
+}
+
+/* Login Button */
+.loginButton {
+  width: 180px;
+  height: 52px;
+  background: #dc0005;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 20px;
+  text-align: center;
+}
+
+.loginButton:hover:not(:disabled) {
+  background: #b80004;
+  box-shadow: 0 4px 12px rgba(220, 0, 5, 0.2);
+}
+
+.loginButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Sign Up Text */
+.signUpText {
+  font-family: 'Inter', 'SF Pro', sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  color: #8b8d97;
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.signUpLink {
+  color: #dc0005;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.signUpLink:hover {
+  opacity: 0.8;
+}

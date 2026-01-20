@@ -1,0 +1,169 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0px 8px 16px rgba(75, 52, 37, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 1 1 calc(30% - var(--spacing-lg));
+  min-width: 160px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  color: #0d1b1e;
+  margin: 0;
+}
+
+.dateFilter {
+  display: flex;
+  align-items: center;
+}
+
+.filterSelect {
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: var(--font-size-helptext);
+  color: #4b5563;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterSelect:hover {
+  border-color: #dc0005;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #dc0005;
+  box-shadow: 0 0 0 2px rgba(220, 0, 5, 0.1);
+}
+
+.dateLabel {
+  font-size: var(--font-size-helptext);
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Content */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chartContainer {
+  position: relative;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chartWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.svg {
+  filter: drop-shadow(0px 2px 8px rgba(75, 52, 37, 0.1));
+}
+
+.chartCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.chartLabel {
+  font-size: var(--font-size-helptext);
+  color: #334155;
+  margin-bottom: 3px;
+}
+
+.chartValue {
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  color: black;
+  letter-spacing: -0.48px;
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f2f5f7;
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.colorDot {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.itemName {
+  font-size: var(--font-size-helptext);
+  color: #171819;
+  font-weight: 400;
+}
+
+.itemValue {
+  font-size: var(--font-size-helptext);
+  color: #191925;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .cardTitle {
+    font-size: var(--font-size-h2);
+  }
+
+  .chartContainer {
+    height: 150px;
+  }
+
+  .chartValue {
+    font-size: var(--font-size-h2);
+  }}

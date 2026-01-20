@@ -1,0 +1,435 @@
+/* FigmaDashboard.module.css - Complete Figma design implementation */
+
+/* Using global tokens from tokens.css */
+/* Local color definitions for backward compatibility */
+:root {
+  --primary-red: #dc0005;
+  --primary-bg: #f4f5fa;
+  --white: #ffffff;
+  --text-dark: #0d1b1e;
+  --text-muted: #656e77;
+  --border-light: #f2f5f7;
+  --success-green: #00a63e;
+  --danger-red: #e7000b;
+  --warning-orange: #fe814b;
+  --card-shadow: 0px 8px 16px rgba(75, 52, 37, 0.05);
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 100px;
+  /* Standardized typography - minimum 12px */
+  --font-size-sm: var(--font-size-helptext);
+  --font-size-base: var(--font-size-helptext);
+  --font-size-lg: var(--font-size-helptext);
+  --font-size-xl: var(--font-size-body);
+  --font-size-2xl: var(--font-size-h3);
+  --font-size-3xl: var(--font-size-h2);
+  --font-size-4xl: 26px;
+  --font-size-5xl: 37px;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.greeting {
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0;
+  letter-spacing: -0.6px;
+}
+
+.filterSelect {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  background-color: var(--white);
+  font-size: var(--font-size-lg);
+  color: var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.12);
+}
+
+/* Red Hero Card */
+.heroCard {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary-red) 0%, #d10005 100%);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+  color: var(--white);
+  box-shadow: 0px 8px 24px rgba(220, 0, 5, 0.2);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.heroCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.heroLabel {
+  font-size: var(--font-size-xl);
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  opacity: 0.95;
+  position: relative;
+  z-index: 1;
+}
+
+.heroValue {
+  font-size: var(--font-size-5xl);
+  font-weight: 500;
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md);
+  position: relative;
+  z-index: 1;
+}
+
+.heroCurrency {
+  font-size: var(--font-size-xl);
+  opacity: 0.9;
+}
+
+.heroChangeIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  position: relative;
+  z-index: 1;
+}
+
+.heroChangeIndicator .positive {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  color: #10b981;
+}
+
+.heroChangeIndicator .negative {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.changeLabel {
+  font-size: var(--font-size-lg);
+  opacity: 0.85;
+  font-weight: 400;
+}
+
+/* KPI Grid */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  width: 100%;
+}
+
+.kpiCard {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--card-shadow);
+}
+
+.kpiHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.kpiTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.kpiChange {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+.kpiChange.positive {
+  color: var(--success-green);
+}
+
+.kpiChange.negative {
+  color: var(--danger-red);
+}
+
+.kpiValue {
+  font-size: var(--font-size-5xl);
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md);
+}
+
+.kpiCurrency {
+  font-size: var(--font-size-xl);
+  color: #343434;
+}
+
+/* Matching Health Section */
+.matchingSection {
+  margin-bottom: var(--spacing-xl);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.matchingGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.matchingCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-md);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-height: 81px;
+}
+
+.matchingContent {
+  flex: 1;
+}
+
+.matchingLabel {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.matchingValue {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.matchingButton {
+  background: var(--primary-red);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  color: var(--white);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.matchingButton:hover {
+  background: #b80004;
+  transform: scale(1.05);
+}
+
+/* Bottom Grid: 3 Columns */
+.bottomGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--card-shadow);
+  flex: 1 1 calc(30% - var(--spacing-lg));
+  min-width: 160px;
+}
+
+.cardLarge {
+  flex: 1 1 calc(36% - var(--spacing-lg));
+}
+
+.cardTitle {
+  font-size: var(--font-size-3xl);
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0 0 27px 0;
+}
+
+.placeholder {
+  background: #f0f0f0;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .main {
+    padding: var(--spacing-xl);
+  }
+
+  .kpiGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .matchingGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .bottomGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .main {
+    padding: var(--spacing-lg);
+  }
+
+  .kpiGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .matchingGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .bottomGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    align-items: flex-start;
+  }
+
+  .greeting {
+    font-size: var(--font-size-3xl);
+  }
+
+  .heroCard {
+    min-height: 150px;
+    padding: var(--spacing-xl);
+  }
+
+  .heroValue {
+    font-size: var(--font-size-4xl);
+  }
+
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .matchingGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .matchingCard {
+    flex-direction: column;
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  .matchingButton {
+    align-self: flex-end;
+    margin-top: var(--spacing-md);
+  }
+
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: var(--spacing-md);
+  }
+
+  .greeting {
+    font-size: var(--font-size-2xl);
+  }
+
+  .heroCard {
+    padding: var(--spacing-lg);
+  }
+
+  .heroValue {
+    font-size: var(--font-size-3xl);
+  }
+
+  .kpiCard,
+  .matchingCard,
+  .card {
+    padding: var(--spacing-lg);
+  }
+
+  .kpiTitle,
+  .matchingLabel,
+  .cardTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .matchingValue {
+    font-size: var(--font-size-3xl);
+  }
+
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .matchingGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}

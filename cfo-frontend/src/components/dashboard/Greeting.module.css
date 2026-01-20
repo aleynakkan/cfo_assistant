@@ -1,0 +1,26 @@
+.greeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-2xl);
+}
+
+.greeting h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-sm);
+}
+
+.greeting p {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+.filter {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+}

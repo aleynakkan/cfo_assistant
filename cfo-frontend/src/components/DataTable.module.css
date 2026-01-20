@@ -1,0 +1,49 @@
+/* DataTable.module.css - Enhanced table row selection styles */
+
+.tableRowSelected {
+  background-color: #eff6ff !important; /* Light blue for selection */
+  border-left: 3px solid var(--color-primary, #dc0005);
+  box-shadow: 0 1px 3px rgba(220, 0, 5, 0.1);
+}
+
+.tableRow {
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tableRow:hover {
+  background-color: #f9fafb;
+}
+
+.tableRow:focus {
+  outline: 2px solid var(--color-primary, #dc0005);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.tableRow[aria-selected="true"]:hover {
+  background-color: #dbeafe;
+}
+
+/* Improve row padding for better touch targets */
+.tableRow td {
+  padding: var(--space-sm, 12px) var(--space-md, 16px);
+}
+
+/* Visual hint that rows are clickable */
+.tableRow[role="row"] {
+  user-select: none;
+}
+
+/* Selection announcement (visually hidden but accessible) */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

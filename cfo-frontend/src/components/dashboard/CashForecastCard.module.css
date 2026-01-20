@@ -1,0 +1,57 @@
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.title {
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  color: #0d1b1e;
+  margin: 0;
+}
+
+.dropdownContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: auto;
+}
+
+.amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.amountValue {
+  font-size: 48px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+  font-family: "SF Pro", sans-serif;
+}
+
+.currency {
+  font-size: var(--font-size-h2);
+  color: #343434;
+  font-family: "SF Pro", sans-serif;
+}
+
+.chartContainer {
+  flex: 1;
+  min-height: 250px;
+  display: flex;
+  align-items: flex-end;
+}

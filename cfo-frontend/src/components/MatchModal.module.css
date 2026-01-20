@@ -1,0 +1,242 @@
+/**
+ * MatchModal.module.css
+ * 
+ * Nested modal styling for the matching interface.
+ * Uses CSS tokens from tokens.css for consistent design.
+ * Provides proper z-index stacking above parent modals.
+ * 
+ * Manual QA checklist after deployment:
+ * - Click overdue card → modal opens (parent modal)
+ * - Click "Eşle" button → nested modal appears centered
+ * - Verify overlay is semi-transparent black (rgba(0,0,0,0.5))
+ * - Verify modal uses --bg-card background
+ * - Verify primary button uses --color-primary
+ * - Press Escape → nested modal closes
+ * - Tab through elements → focus stays within modal
+ * - Test on mobile (<480px) → modal is 92% width with reduced padding
+ */
+
+.nestedModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: var(--space-lg);
+}
+
+.nestedModal {
+  width: 100%;
+  max-width: 680px;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  z-index: 1201;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.closeButton {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 28px;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+  color: var(--text-primary);
+}
+
+.closeButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+  border-radius: var(--radius-sm);
+}
+
+.modalInfo {
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+  line-height: 1.6;
+}
+
+.modalInfo strong {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.suggestionsContainer {
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-lg);
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-sm);
+}
+
+.suggestionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-helptext);
+}
+
+.suggestionsTable thead tr {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.suggestionsTable th {
+  padding: var(--space-sm);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.suggestionsTable tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.suggestionsTable td {
+  padding: var(--space-sm);
+  color: var(--text-secondary);
+}
+
+.suggestionsTable tbody tr:hover {
+  background: #f9fafb;
+}
+
+.inputGroup {
+  margin-top: var(--space-md);
+}
+
+.inputLabel {
+  font-size: var(--font-size-helptext);
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: var(--space-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.inputField {
+  width: 100%;
+  padding: calc(var(--space-sm) + 2px) var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 1px solid #d1d5db;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.btnPrimary {
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--space-sm) var(--space-xl);
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  margin-top: var(--space-lg);
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.btnPrimary:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+.btnPrimary:disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: var(--space-md);
+  font-size: var(--font-size-body);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+}
+
+.messageError {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.messageSuccess {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.emptyState {
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-xl);
+  font-size: var(--font-size-body);
+}
+
+.loadingState {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--space-xl);
+  font-size: var(--font-size-body);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .nestedModalOverlay {
+    padding: var(--space-md);
+  }
+
+  .nestedModal {
+    max-width: 92%;
+    padding: var(--space-lg);
+  }
+
+  .modalTitle {
+    font-size: var(--font-size-body);
+  }
+
+  .btnPrimary {
+    padding: var(--space-md) var(--space-lg);
+  }
+}
