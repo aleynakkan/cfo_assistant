@@ -302,8 +302,12 @@ async def upload_akbank_excel(
         raise HTTPException(status_code=400, detail="Lütfen Excel formatında dosya yükleyin (.xlsx, .xls vb.)")
 
     content = await file.read()
+    
+    # Dosya uzantısına göre doğru engine'i seç
+    engine = 'xlrd' if filename.endswith('.xls') else 'openpyxl'
+    
     try:
-        df = pd.read_excel(BytesIO(content), sheet_name=0, header=None)
+        df = pd.read_excel(BytesIO(content), sheet_name=0, header=None, engine=engine)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Excel okunamadı: {str(e)}")
 
@@ -549,8 +553,12 @@ async def upload_enpara_excel(
         raise HTTPException(status_code=400, detail="Lütfen Excel formatında dosya yükleyin (.xlsx, .xls vb.)")
 
     content = await file.read()
+    
+    # Dosya uzantısına göre doğru engine'i seç
+    engine = 'xlrd' if filename.endswith('.xls') else 'openpyxl'
+    
     try:
-        df = pd.read_excel(BytesIO(content), sheet_name=0, header=None)
+        df = pd.read_excel(BytesIO(content), sheet_name=0, header=None, engine=engine)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Excel okunamadı: {str(e)}")
 

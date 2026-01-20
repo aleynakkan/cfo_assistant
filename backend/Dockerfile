@@ -13,8 +13,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Uygulama dosyalarını kopyala
 COPY . .
 
-# Veritabanı dosyasının kopyalandığını doğrula
-RUN ls -la /app/*.db || echo "No database files found"
-
 # Uygulamayı başlat
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

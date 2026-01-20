@@ -2111,17 +2111,11 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
 
     try {
       setAkbankUploading(true);
-      const res = await apiFetch(`/transactions/upload-akbank-excel`, {
+      const data = await apiFetch(`/transactions/upload-akbank-excel`, {
         method: "POST",
         body: formData,
       }, token);
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || "Yükleme başarısız");
-      }
-
-      const data = await res.json();
       console.log("Akbank Upload Response:", data);
       if (data.errors && data.errors.length > 0) {
         console.log("First 5 errors:", data.errors.slice(0, 5));
@@ -2166,17 +2160,11 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
 
     try {
       setEnparaUploading(true);
-      const res = await apiFetch(`/transactions/upload-enpara-excel`, {
+      const data = await apiFetch(`/transactions/upload-enpara-excel`, {
         method: "POST",
         body: formData,
       }, token);
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || "Yükleme başarısız");
-      }
-
-      const data = await res.json();
       let msg = `Yükleme tamamlandı. Yeni eklenen: ${data.inserted}${
         data.duplicates ? `, mükerrer: ${data.duplicates}` : ""
       }${
