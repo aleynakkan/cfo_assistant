@@ -49,7 +49,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
   const netCash = summary?.net_cashflow || 0;
 
   const hour = new Date().getHours();
-  let greeting = "Günaydın";
+  let greeting = "Günaydınn";
   if (hour >= 12 && hour < 18) greeting = "İyi öğlenler";
   if (hour >= 18) greeting = "İyi akşamlar";
 
