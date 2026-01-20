@@ -1,3 +1,5 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
 steps:
 # Backend için Docker image build ve deploy
 - name: 'gcr.io/cloud-builders/docker'
