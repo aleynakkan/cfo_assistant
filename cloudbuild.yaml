@@ -17,6 +17,7 @@ steps:
     - '--region=us-central1'
     - '--allow-unauthenticated'
     - '--set-cloudsql-instances=cfoseyfo-test:us-central1:cfoseyfodbqa'
+    - '--remove-env-vars=DATABASE_URL'
     - '--update-secrets=DATABASE_URL=db-connection-string:latest'
 
 # Frontend için Docker image build ve deploy
