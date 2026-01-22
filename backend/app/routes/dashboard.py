@@ -709,10 +709,12 @@ def fixed_costs_analysis(
     six_months_ago = period_start - timedelta(days=180)
 
     # Sabit gider kategorilerine odaklan
+    year_month_col = get_year_month_format(Transaction.date).label("year_month")
+    
     rows = (
         db.query(
             Transaction.category,
-            Transaction.date,
+            year_month_col,
             func.sum(Transaction.amount).label("monthly_amount"),
         )
         .filter(
@@ -723,19 +725,20 @@ def fixed_costs_analysis(
         )
         .group_by(
             Transaction.category,
-            get_year_month_format(Transaction.date),
+            year_month_col,
         )
-        .order_by(Transaction.category, Transaction.date.desc())
+        .order_by(Transaction.category, year_month_col.desc())
         .all()
     )
 
     # Kategori bazında ay-tutarlarını grupla
     category_data = {}
-    for cat, txn_date, amount in rows:
+    for cat, year_month, amount in rows:
         if cat not in category_data:
             category_data[cat] = {}
         
-        month_key = txn_date.strftime("%Y-%m")
+        # year_month is already in 'YYYY-MM' format from SQL
+        month_key = year_month
         amount_float = float(amount or 0)
         if month_key not in category_data[cat]:
             category_data[cat][month_key] = 0.0
