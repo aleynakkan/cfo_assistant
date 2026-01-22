@@ -3,6 +3,7 @@
 from datetime import date, timedelta
 from typing import List
 from math import sqrt
+import os
 
 from fastapi import APIRouter, Depends, Query, Path
 from sqlalchemy.orm import Session
@@ -15,6 +16,18 @@ from app.models.transaction import Transaction
 from app.models.company import Company
 from app.models.planned_item import PlannedCashflowItem
 from app.models.planned_match import PlannedMatch
+
+
+# Helper function to format date for grouping - works with both SQLite and PostgreSQL
+def get_year_month_format(date_column):
+    """Returns the appropriate SQL function to format date as YYYY-MM"""
+    database_url = os.getenv("DATABASE_URL", "")
+    if "postgresql" in database_url.lower():
+        # PostgreSQL uses to_char
+        return func.to_char(date_column, 'YYYY-MM')
+    else:
+        # SQLite uses strftime
+        return func.strftime("%Y-%m", date_column)
 
 
 router = APIRouter()
@@ -710,7 +723,7 @@ def fixed_costs_analysis(
         )
         .group_by(
             Transaction.category,
-            func.strftime("%Y-%m", Transaction.date),  # SQLite için
+            get_year_month_format(Transaction.date),
         )
         .order_by(Transaction.category, Transaction.date.desc())
         .all()
