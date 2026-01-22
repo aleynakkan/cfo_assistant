@@ -13,6 +13,10 @@ RUN npm install
 # Uygulama dosyalarını kopyala
 COPY . .
 
+# Build argument olarak API URL'i al
+ARG VITE_API_URL=https://cfo-backend-332747511395.us-central1.run.app
+ENV VITE_API_URL=$VITE_API_URL
+
 # Uygulamayı build et
 RUN npm run build
 
