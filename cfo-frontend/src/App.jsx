@@ -2610,10 +2610,10 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                             <input
                               type="checkbox"
                               checked={selectedTransactions.has(tx.id)}
-                              onChange={(e) => {
-                                e.stopPropagation();
+                              onChange={() => {
                                 toggleTransactionSelection(tx.id);
                               }}
+                              onClick={(e) => e.stopPropagation()}
                               style={{ width: "16px", height: "16px", cursor: "pointer" }}
                               aria-label={`Select transaction ${tx.description}`}
                             />
@@ -2903,10 +2903,10 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                             <input
                               type="checkbox"
                               checked={selectedPlanned.has(item.id)}
-                              onChange={(e) => {
-                                e.stopPropagation();
+                              onChange={() => {
                                 togglePlannedSelection(item.id);
                               }}
+                              onClick={(e) => e.stopPropagation()}
                               style={{ width: "16px", height: "16px", cursor: "pointer" }}
                               aria-label={`Select planned item ${item.counterparty || item.type}`}
                             />
