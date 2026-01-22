@@ -101,6 +101,8 @@ def get_cash_position(
     = Başlangıç bakiyesi + (Gelirler - Giderler)
     """
     from datetime import timedelta
+    import logging
+    logger = logging.getLogger(__name__)
     
     settings = (
         db.query(CompanyFinancialSettings)
@@ -113,6 +115,13 @@ def get_cash_position(
             status_code=404, detail="Başlangıç bakiyesi tanımlı değil"
         )
 
+    # Debug: transaction sayısını kontrol et
+    tx_count = db.query(func.count(Transaction.id)).filter(
+        Transaction.company_id == company.id,
+        Transaction.date >= settings.initial_balance_date,
+    ).scalar()
+    logger.info(f"Company {company.id}: {tx_count} transactions since {settings.initial_balance_date}")
+
     # Bugünün tahmini nakit pozisyonu
     estimated = calculate_estimated_cash(
         db,
@@ -120,6 +129,7 @@ def get_cash_position(
         float(settings.initial_balance),
         settings.initial_balance_date,
     )
+    logger.info(f"Company {company.id}: initial={settings.initial_balance}, estimated={estimated}")
 
     # 30 gün önceki tahmini nakit pozisyonu
     today = date.today()

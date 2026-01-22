@@ -19,6 +19,9 @@ def calculate_estimated_cash(
     Tahmini Nakit = Başlangıç Bakiyesi + Gelirler - Giderler
     (Başlangıç tarihinden bugüne kadar)
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     # Başlangıç tarihinden bugüne kadar Gelirler
     income = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
         Transaction.company_id == company_id,
@@ -36,5 +39,7 @@ def calculate_estimated_cash(
     # Decimal değerleri float'a çevir
     income_float = float(income or 0)
     expense_float = float(expense or 0)
+    
+    logger.info(f"Cash calculation: initial={initial_balance}, income={income_float}, expense={expense_float}, result={initial_balance + income_float - expense_float}")
     
     return float(initial_balance + income_float - expense_float)
