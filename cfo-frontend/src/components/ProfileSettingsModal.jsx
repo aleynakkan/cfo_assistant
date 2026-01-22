@@ -39,7 +39,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
       const headers = token_str ? { 'Authorization': `Bearer ${token_str}` } : {};
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-      const response = await fetch(`${API_BASE}/company/cash-position`, {
+      const response = await fetch(`${API_BASE}/company/initial-balance`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
