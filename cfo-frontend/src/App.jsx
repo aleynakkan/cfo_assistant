@@ -2614,7 +2614,6 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                                 e.stopPropagation();
                                 toggleTransactionSelection(tx.id);
                               }}
-                              onClick={(e) => e.stopPropagation()}
                               style={{ width: "16px", height: "16px", cursor: "pointer" }}
                               aria-label={`Select transaction ${tx.description}`}
                             />
@@ -2908,7 +2907,6 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                                 e.stopPropagation();
                                 togglePlannedSelection(item.id);
                               }}
-                              onClick={(e) => e.stopPropagation()}
                               style={{ width: "16px", height: "16px", cursor: "pointer" }}
                               aria-label={`Select planned item ${item.counterparty || item.type}`}
                             />
