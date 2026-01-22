@@ -29,6 +29,7 @@ origins = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
     "https://cfo-frontend-332747511395.us-central1.run.app",
+    "https://cfoseyfo-test-332747511395.us-central1.run.app",
 ]
 
 app.add_middleware(
@@ -37,6 +38,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
