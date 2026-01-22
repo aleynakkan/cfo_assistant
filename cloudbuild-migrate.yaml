@@ -1,0 +1,19 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/cfoseyfo-test/migration-job', '-f', 'Dockerfile.migrate', '.']
+  dir: 'backend'
+  
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['run', 
+         '--network', 'cloudbuild',
+         '-e', 'DATABASE_URL=postgresql://postgres:$$DB_PASSWORD@34.71.139.120:5432/postgres',
+         'gcr.io/cfoseyfo-test/migration-job']
+  secretEnv: ['DB_PASSWORD']
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/cfoseyfo-test/secrets/db-password/versions/latest
+    env: 'DB_PASSWORD'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
