@@ -1,11 +1,6 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
-availableSecrets:
-  secretManager:
-  - versionName: projects/cfoseyfo-test/secrets/db-password/versions/latest
-    env: 'DB_PASSWORD'
-
 steps:
 # Backend için Docker image build ve deploy
 - name: 'gcr.io/cloud-builders/docker'
@@ -13,14 +8,16 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/cfoseyfo-test/cfo-backend']
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['run', 'deploy', 'cfo-backend',
-         '--image', 'gcr.io/cfoseyfo-test/cfo-backend',
-         '--platform', 'managed',
-         '--region', 'us-central1',
-         '--allow-unauthenticated',
-         '--set-env-vars', 'DATABASE_URL=postgresql://postgres:$$DB_PASSWORD@/postgres?host=/cloudsql/cfoseyfo-test:us-central1:cfoseyfodbqa',
-         '--set-cloudsql-instances', 'cfoseyfo-test:us-central1:cfoseyfodbqa']
-  secretEnv: ['DB_PASSWORD']
+  args:
+    - 'run'
+    - 'deploy'
+    - 'cfo-backend'
+    - '--image=gcr.io/cfoseyfo-test/cfo-backend'
+    - '--platform=managed'
+    - '--region=us-central1'
+    - '--allow-unauthenticated'
+    - '--set-cloudsql-instances=cfoseyfo-test:us-central1:cfoseyfodbqa'
+    - '--update-secrets=DATABASE_URL=db-connection-string:latest'
 
 # Frontend için Docker image build ve deploy
 - name: 'gcr.io/cloud-builders/docker'
