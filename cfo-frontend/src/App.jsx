@@ -2604,7 +2604,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                             }
                           }}
                           className={`${tableStyles.tableRow} ${selectedTransactions.has(tx.id) ? tableStyles.tableRowSelected : ''}`}
-                          style={{ borderBottom: "1px solid #f3f4f6" }}
+                          style={{ borderBottom: "1px solid #000000" }}
                         >
                           <Td style={{ padding: "0 2px", textAlign: "center" }} role="gridcell">
                             <input

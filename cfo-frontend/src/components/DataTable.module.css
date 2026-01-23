@@ -2,7 +2,7 @@
 
 .tableRowSelected {
   background-color: #eff6ff !important; /* Light blue for selection */
-  border-left: 4px solid var(--color-primary, hsl(122, 100%, 43%));
+  border-left: 4px solid var(--color-primary, #0055ff);
 }
 
 .tableRow {
