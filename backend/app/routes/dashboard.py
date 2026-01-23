@@ -1417,8 +1417,6 @@ def apply_insight_suggestion(
 
 # ====== CFO PROFILE ENDPOINT ======
 
-FIXED_COST_CATEGORIES = {"MAAS", "KIRA", "VERGI", "SIGORTA"}
-
 def clamp(x: float, lo: float, hi: float) -> float:
     """Değeri lo ile hi arasına sınırla."""
     return max(lo, min(hi, x))

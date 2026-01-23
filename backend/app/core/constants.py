@@ -19,26 +19,35 @@ CATEGORIES = [
     "DIGER_GIDER",
 ]
 
-# Sabit gider kategorileri (ayda tekrar eden, tutarları stabil olanlar)
-FIXED_COST_CATEGORIES = {
-    "KIRA",
-    "MAAS",
-    "AKARYAKIT",
-    "ELEKTRIK",
-    "SU",
-    "INTERNET",
-    "VERGI",
-    "SIGORTA",
-    "DIGER_GIDER",
-}
-
-# Gelir kategorileri (gider analizlerinden hariç tutulmalı)
+# Gelir kategorileri
 INCOME_CATEGORIES = {
     "POS_GELIRI",
     "EFT_TAHSILAT",
     "ONLINE_SATIS",
     "DIGER_GELIR",
 }
+
+# Sabit gider kategorileri (ayda tekrar eden, tutarları stabil olanlar)
+FIXED_COST_CATEGORIES = {
+    "KIRA",
+    "MAAS",
+    "AKARYAKIT",
+    "KARGO",
+    "ELEKTRIK",
+    "SU",
+    "INTERNET",
+    "VERGI",
+    "SIGORTA",
+}
+
+# Değişken gider kategorileri (düzensiz, tek seferlik giderler)
+VARIABLE_COST_CATEGORIES = {
+    "OFIS_MALZEME",
+    "DIGER_GIDER",
+}
+
+# Tüm gider kategorileri
+EXPENSE_CATEGORIES = FIXED_COST_CATEGORIES | VARIABLE_COST_CATEGORIES
 
 # Anomali tespit için eşik değeri (% olarak)
 ANOMALY_THRESHOLD = 20  # %20 üzeri artış = anomali

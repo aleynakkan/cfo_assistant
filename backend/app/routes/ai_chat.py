@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
 from app.core.deps import get_db, get_current_company
+from app.core.constants import FIXED_COST_CATEGORIES
 from app.models.company import Company
 from app.models.transaction import Transaction
 from app.models.planned_item import PlannedCashflowItem
@@ -165,7 +166,6 @@ def build_financial_context(
         concentration_risk = clamp(safe_div((conc - 0.2), (0.8 - 0.2)) * 100.0, 0, 100)
 
         # Fixed cost
-        FIXED_COST_CATEGORIES = {"MAAS", "KIRA", "VERGI", "SIGORTA"}
         fixed_cost = sum(expense_by_cat.get(c, 0.0) for c in FIXED_COST_CATEGORIES)
         fixed_cost_ratio = safe_div(fixed_cost, total_expense_cat)
 
