@@ -16,9 +16,7 @@
 }
 
 .tableRow:focus {
-  outline: 2px solid var(--color-primary, #dc0005);
-  outline-offset: -2px;
-  z-index: 1;
+  outline: none;
 }
 
 .tableRow[aria-selected="true"]:hover {
