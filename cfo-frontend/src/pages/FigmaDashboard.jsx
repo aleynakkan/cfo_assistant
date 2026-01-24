@@ -323,30 +323,9 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        {/* Header: Greeting */}
+        {/* Header: Greeting + Date Filter */}
         <div className={styles.header}>
           <h1 className={styles.greeting}>{greeting}, {userName}! 👋</h1>
-        </div>
-
-        {/* Red Hero Card: Tahmini Nakit */}
-        <div className={styles.heroCard}>
-          <div className={styles.heroLabel}>Tahmini Nakit Pozisyonu</div>
-          <div className={styles.heroValue}>
-            {fmt(estimatedCash, 0, 2)}
-            <span className={styles.heroCurrency}>TRY</span>
-          </div>
-          {cashPosition?.change_30_days_percent !== undefined && (
-            <div className={styles.heroChangeIndicator}>
-              <span className={cashPosition.change_30_days_percent >= 0 ? styles.positive : styles.negative}>
-                {cashPosition.change_30_days_percent >= 0 ? '+' : '-'}{Math.abs(cashPosition.change_30_days_percent).toFixed(1)}%
-              </span>
-              <span className={styles.changeLabel}>son 1 ay</span>
-            </div>
-          )}
-        </div>
-
-        {/* Date Filter */}
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <select 
             className={styles.filterSelect}
             value={dateFilter}
@@ -358,8 +337,31 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
           </select>
         </div>
 
-        {/* KPI Cards Row: Gelir, Gider, Net */}
-        <div className={styles.kpiGrid}>
+        {/* Hero Row: Tahmini Nakit + 3 KPI Cards */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "4.17fr 2fr 2fr 2fr", 
+          gap: "14px",
+          marginBottom: "12px"
+        }}>
+          {/* Red Hero Card: Tahmini Nakit */}
+          <div className={styles.heroCard}>
+            <div className={styles.heroLabel}>Tahmini Nakit Pozisyonu</div>
+            <div className={styles.heroValue}>
+              {fmt(estimatedCash, 0, 2)}
+              <span className={styles.heroCurrency}>TRY</span>
+            </div>
+            {cashPosition?.change_30_days_percent !== undefined && (
+              <div className={styles.heroChangeIndicator}>
+                <span className={cashPosition.change_30_days_percent >= 0 ? styles.positive : styles.negative}>
+                  {cashPosition.change_30_days_percent >= 0 ? '+' : '-'}{Math.abs(cashPosition.change_30_days_percent).toFixed(1)}%
+                </span>
+                <span className={styles.changeLabel}>son 1 ay</span>
+              </div>
+            )}
+          </div>
+
+          {/* KPI Card 1: Toplam Gelir */}
           <div className={styles.kpiCard}>
             <div className={styles.kpiHeader}>
               <span className={styles.kpiTitle}>Toplam Gelir</span>
@@ -370,6 +372,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
             </div>
           </div>
 
+          {/* KPI Card 2: Toplam Gider */}
           <div className={styles.kpiCard}>
             <div className={styles.kpiHeader}>
               <span className={styles.kpiTitle}>Toplam Gider</span>
@@ -380,6 +383,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
             </div>
           </div>
 
+          {/* KPI Card 3: Net Nakit Akışı */}
           <div className={styles.kpiCard}>
             <div className={styles.kpiHeader}>
               <span className={styles.kpiTitle}>Net Nakit Akışı</span>

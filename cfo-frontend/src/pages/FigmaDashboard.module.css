@@ -67,16 +67,16 @@
   width: 100%;
   background: linear-gradient(135deg, var(--primary-red) 0%, #d10005 100%);
   border-radius: 12px;
-  padding: 32px;
+  padding: 24px;
   margin-bottom: var(--spacing-lg);
   position: relative;
   overflow: hidden;
   color: var(--white);
   box-shadow: 0px 8px 24px rgba(220, 0, 5, 0.2);
-  min-height: 150px;
+  height: 180px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .heroCard::before {
@@ -92,26 +92,29 @@
 
 .heroLabel {
   font-size: var(--font-size-xl);
-  font-weight: 500;
-  margin-bottom: var(--spacing-sm);
+  font-weight: 400;
+  margin-bottom: 0;
   opacity: 0.95;
   position: relative;
   z-index: 1;
+  line-height: 1.4;
 }
 
 .heroValue {
-  font-size: var(--font-size-5xl);
-  font-weight: 500;
+  font-size: 48px;
+  font-weight: 400;
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-md);
+  gap: 8px;
   position: relative;
   z-index: 1;
+  line-height: 1.1;
 }
 
 .heroCurrency {
-  font-size: var(--font-size-xl);
+  font-size: 20px;
   opacity: 0.9;
+  font-weight: 400;
 }
 
 .heroChangeIndicator {
@@ -153,21 +156,26 @@
 .kpiCard {
   background: var(--white);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
+  padding: 24px;
   box-shadow: var(--card-shadow);
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .kpiHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
+  align-items: flex-start;
+  margin-bottom: 0;
 }
 
 .kpiTitle {
   font-size: var(--font-size-xl);
-  font-weight: 500;
+  font-weight: 400;
   color: rgba(0, 0, 0, 0.85);
+  line-height: 1.4;
 }
 
 .kpiChange {
@@ -184,17 +192,19 @@
 }
 
 .kpiValue {
-  font-size: var(--font-size-5xl);
-  font-weight: 500;
+  font-size: 48px;
+  font-weight: 400;
   color: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-md);
+  gap: 8px;
+  line-height: 1.1;
 }
 
 .kpiCurrency {
-  font-size: var(--font-size-xl);
-  color: #343434;
+  font-size: 20px;
+  color: rgba(0, 0, 0, 0.65);
+  font-weight: 400;
 }
 
 /* Matching Health Section */

@@ -643,22 +643,64 @@ function DashboardView({
       {loading && <p>Veriler yükleniyor...</p>}
       {error && <p style={{ color: "red" }}>Hata: {error}</p>}
 
-      {summary && (
+      {/* Hero Row: Tahmini Nakit Pozisyonu + 3 Summary Cards */}
+      {(cashPosition || summary) && (
         <div
           style={{
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr",
             gap: "16px",
             marginBottom: "24px",
-            flexWrap: "wrap",
           }}
         >
-          <SummaryCard title="Toplam Gelir" value={summary.total_income} />
-          <SummaryCard title="Toplam Gider" value={summary.total_expense} />
-          <SummaryCard
-            title="Net Nakit Akışı (Gerçekleşen)"
-            value={summary.net_cashflow}
-            highlight
-          />
+          {/* Hero Card - Tahmini Nakit Pozisyonu */}
+          {cashPosition && (
+            <div
+              style={{
+                background: "#dc0005",
+                borderRadius: "8px",
+                padding: "20px",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                color: "white",
+              }}
+            >
+              <div style={{ fontSize: "14px", marginBottom: "12px", opacity: 0.9 }}>
+                Tahmini Nakit Pozisyonu
+              </div>
+              <div
+                style={{
+                  fontSize: "36px",
+                  fontWeight: 700,
+                  marginBottom: "8px",
+                }}
+              >
+                {Number(cashPosition.estimated_cash).toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                <span style={{ fontSize: "18px" }}>TRY</span>
+              </div>
+              <div style={{ fontSize: "12px", opacity: 0.8 }}>
+                Başlangıç: {Number(cashPosition.initial_balance).toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })} TL ({cashPosition.initial_balance_date})
+              </div>
+            </div>
+          )}
+
+          {/* 3 Summary Cards */}
+          {summary && (
+            <>
+              <SummaryCard title="Toplam Gelir" value={summary.total_income} />
+              <SummaryCard title="Toplam Gider" value={summary.total_expense} />
+              <SummaryCard
+                title="Net Nakit Akışı (Gerçekleşen)"
+                value={summary.net_cashflow}
+                highlight
+              />
+            </>
+          )}
         </div>
       )}
 
@@ -703,71 +745,7 @@ function DashboardView({
         </div>
       )}
 
-      {/* Tahmini Nakit Pozisyonu */}
-      {cashPosition && (
-        <div
-          style={{
-            display: "flex",
-            gap: "16px",
-            marginBottom: "8px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: "8px",
-              padding: "16px",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
-              flex: "1 1 200px",
-              minWidth: "160px",
-            }}
-          >
-            <div style={{ fontSize: "var(--font-size-helptext)", color: "#6b7280", marginBottom: "8px" }}>
-              💰 Tahmini Nakit Pozisyonu
-            </div>
-            <div
-              style={{
-                fontSize: "var(--font-size-h1)",
-                fontWeight: 700,
-                color: cashPosition.estimated_cash >= 0 ? "#059669" : "#dc2626",
-                marginBottom: "6px",
-              }}
-            >
-              {Number(cashPosition.estimated_cash).toLocaleString("tr-TR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              TL
-            </div>
-            <div style={{ fontSize: "var(--font-size-helptext)", color: "#6b7280" }}>
-              Başl: {Number(cashPosition.initial_balance).toLocaleString("tr-TR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              TL
-              <br />({cashPosition.initial_balance_date})
-            </div>
-            
-            {/* 30 Gün Karşilaştırması */}
-            <div style={{ 
-              marginTop: "12px", 
-              paddingTop: "12px", 
-              borderTop: "1px solid #e5e7eb",
-              fontSize: "var(--font-size-helptext)",
-              color: "#6b7280"
-            }}>
-              <div style={{ marginBottom: "4px" }}>
-                <strong>30 gün öncesi:</strong> {Number(cashPosition.estimated_cash_30_days_ago).toLocaleString("tr-TR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })} TL
-              </div>
 
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Advanced 30-60-90 Forecast (rutin + planli) */}
       {forecast && (

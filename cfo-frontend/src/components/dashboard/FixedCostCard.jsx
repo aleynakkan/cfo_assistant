@@ -62,8 +62,8 @@ function DonutChart({ data, onHoverChange, hoveredCategory }) {
     const startRad = (startAngle - 90) * (Math.PI / 180);
     const endRad = (endAngle - 90) * (Math.PI / 180);
 
-    const innerRadius = 50;
-    const outerRadius = 80;
+    const innerRadius = 75;
+    const outerRadius = 95;
 
     return (
       <DonutSegment
@@ -225,8 +225,8 @@ export default function FixedCostCard({ data, token }) {
 
   const fmt = (n) =>
     Number(n || 0).toLocaleString("tr-TR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     });
 
   // Get month names based on filter - dinamik ve memoized
@@ -273,7 +273,7 @@ export default function FixedCostCard({ data, token }) {
           <div className={styles.chartWrapper}>
             <DonutChart data={chartData} onHoverChange={setHoveredCategory} hoveredCategory={hoveredCategory} />
             <div className={styles.chartCenter}>
-              <div className={styles.chartLabel}>Total Gider</div>
+              <div className={styles.chartLabel}>Toplam Gider</div>
               <div className={styles.chartValue}>{fmt(totalCost)} TL</div>
             </div>
           </div>

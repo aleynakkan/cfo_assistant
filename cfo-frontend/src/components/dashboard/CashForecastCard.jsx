@@ -78,21 +78,14 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
     <div className={styles.card}>
       <div className={styles.header}>
         <h3 className={styles.title}>Nakit Tahmini</h3>
-        <div style={{ fontSize: "13px", display: "flex", alignItems: "center", gap: "8px" }}>
+        <div>
           <select
             value={period}
             onChange={(e) => {
               const newPeriod = Number(e.target.value);
               setPeriod(newPeriod);
             }}
-            style={{
-              padding: "6px 12px",
-              border: "1px solid #e5e7eb",
-              borderRadius: "6px",
-              backgroundColor: "#ffffff",
-              fontSize: "14px",
-              cursor: "pointer",
-            }}
+            className={styles.filterSelect}
             disabled={loading}
           >
             <option value={30}>30 Gün</option>
@@ -105,8 +98,8 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
       <div className={styles.amount}>
         <span className={styles.amountValue}>
           {projectedAmount.toLocaleString("tr-TR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
           })}
         </span>
         <span className={styles.currency}>TL</span>
@@ -149,8 +142,8 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
                 }}
                 formatter={(value) =>
                   `${value.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
                   })} TL`
                 }
               />

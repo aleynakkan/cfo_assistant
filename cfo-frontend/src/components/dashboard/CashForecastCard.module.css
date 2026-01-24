@@ -49,6 +49,27 @@
   font-family: "SF Pro", sans-serif;
 }
 
+.filterSelect {
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: var(--font-size-helptext);
+  color: #4b5563;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterSelect:hover {
+  border-color: #dc0005;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #dc0005;
+  box-shadow: 0 0 0 2px rgba(220, 0, 5, 0.1);
+}
+
 .chartContainer {
   flex: 1;
   min-height: 250px;
