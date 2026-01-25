@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import useFocusTrap from "../hooks/useFocusTrap";
 import styles from "./InsightCard.module.css";
+import warningIcon from "../assets/warning.svg";
 
 // Telemetry stub (replace with actual implementation)
 function sendTelemetry(eventName, payload) {
@@ -83,7 +84,7 @@ function renderMetric(insight) {
 // Severity icon mapping
 const severityConfig = {
   critical: { icon: "🔴", label: "Kritik", labelEn: "Critical" },
-  medium: { icon: "⚠️", label: "Uyarı", labelEn: "Warning" },
+  medium: { icon: <img src={warningIcon} alt="Warning" style={{ width: "20px", height: "20px" }} />, label: "Uyarı", labelEn: "Warning" },
   info: { icon: "ℹ️", label: "Bilgi", labelEn: "Info" },
   low: { icon: "📊", label: "Bilgi", labelEn: "Info" },
 };

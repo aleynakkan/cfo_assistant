@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, DateTime, Numeric, Integer, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Date, DateTime, Numeric, Integer, ForeignKey, UniqueConstraint, UUID
 from sqlalchemy.sql import func
 from app.core.database import Base
 import uuid
@@ -13,9 +13,11 @@ class Transaction(Base):
     amount = Column(Numeric(12, 2), nullable=False)
     direction = Column(String, nullable=False)  # "in" veya "out"
     category = Column(String, nullable=True)
-    source = Column(String, nullable=False, default="manual")
+    source = Column(String, nullable=False, default="MANUAL")  # MANUAL, EMAIL, EXCEL_UPLOAD
+    source_id = Column(UUID(as_uuid=True), nullable=True)  # Reference to email_attachment.id for EMAIL source
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    imported_at = Column(DateTime(timezone=True), nullable=True)  # When imported via email/excel
     external_id = Column(String, nullable=True, index=True)
     
     # Composite unique constraint: external_id + direction + company_id

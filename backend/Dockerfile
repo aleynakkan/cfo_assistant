@@ -13,5 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Uygulama dosyalarını kopyala
 COPY . .
 
-# Uygulamayı başlat
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Başlangıç script'i oluştur
+RUN echo '#!/bin/bash\necho "Running database migrations..."\npython migrate_email_tables.py\necho "Starting application..."\nexec uvicorn main:app --host 0.0.0.0 --port 8080' > /app/start.sh && chmod +x /app/start.sh
+
+# Başlangıç script'i ile uygulamayı başlat
+CMD ["/app/start.sh"]
