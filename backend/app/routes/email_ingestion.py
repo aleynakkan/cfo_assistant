@@ -12,7 +12,6 @@ from ..core.database import get_db
 from ..core.deps import get_current_user, get_current_company
 from ..models.user import User
 from ..models.company import Company
-from ..models.email_alias import EmailAlias
 from ..models.email_ingest_log import EmailIngestLog
 from ..models.email_attachment import EmailAttachment
 from ..services.email_ingestion import email_ingestion_service
@@ -55,60 +54,7 @@ async def process_email_webhook(
         logger.error(f"Error in email webhook: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error processing email")
 
-@router.post("/aliases")
-async def create_email_alias(
-    original_email: str = Form(..., description="User's original email address"),
-    current_user: User = Depends(get_current_user),
-    current_company: Company = Depends(get_current_company),
-    db: Session = Depends(get_db)
-):
-    """Create an email alias for the current user."""
-    try:
-        alias = email_ingestion_service.create_email_alias(
-            db=db,
-            user_id=current_user.id,
-            company_id=current_company.id,
-            original_email=original_email
-        )
-        
-        return {
-            "success": True,
-            "alias_email": alias.alias_email,
-            "original_email": alias.original_email,
-            "created_at": alias.created_at
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error creating email alias: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to create email alias")
 
-@router.get("/aliases")
-async def get_user_aliases(
-    current_user: User = Depends(get_current_user),
-    current_company: Company = Depends(get_current_company),
-    db: Session = Depends(get_db)
-):
-    """Get all email aliases for the current user."""
-    aliases = db.query(EmailAlias).filter(
-        EmailAlias.user_id == current_user.id,
-        EmailAlias.company_id == current_company.id,
-        EmailAlias.is_active == True
-    ).all()
-    
-    return {
-        "aliases": [
-            {
-                "id": alias.id,
-                "original_email": alias.original_email,
-                "alias_email": alias.alias_email,
-                "created_at": alias.created_at,
-                "is_active": alias.is_active
-            }
-            for alias in aliases
-        ]
-    }
 
 @router.get("/logs")
 async def get_email_logs(
@@ -203,27 +149,6 @@ async def rollback_attachment_transactions(
     
     return result
 
-@router.delete("/aliases/{alias_id}")
-async def deactivate_email_alias(
-    alias_id: int,
-    current_user: User = Depends(get_current_user),
-    current_company: Company = Depends(get_current_company),
-    db: Session = Depends(get_db)
-):
-    """Deactivate an email alias."""
-    alias = db.query(EmailAlias).filter(
-        EmailAlias.id == alias_id,
-        EmailAlias.user_id == current_user.id,
-        EmailAlias.company_id == current_company.id
-    ).first()
-    
-    if not alias:
-        raise HTTPException(status_code=404, detail="Email alias not found")
-    
-    alias.is_active = False
-    db.commit()
-    
-    return {"success": True, "message": "Email alias deactivated"}
 
 @router.get("/status")
 async def get_ingestion_status():
