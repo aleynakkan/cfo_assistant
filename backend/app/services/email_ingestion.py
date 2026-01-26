@@ -8,6 +8,7 @@ import tempfile
 import logging
 from typing import Optional, Dict, List
 from datetime import datetime
+from unittest import result
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -15,16 +16,19 @@ from ..models.email_alias import EmailAlias
 from ..models.email_ingest_log import EmailIngestLog
 from ..models.email_attachment import EmailAttachment
 from ..models.transaction import Transaction
-from .excel_parser import excel_parser
+from ..models.company import Company
+from .bank_detector import bank_detector
 
 logger = logging.getLogger(__name__)
 
 class EmailIngestionService:
-    """Main service for processing incoming emails with Excel attachments."""
+    """Main service for processing incoming emails with Excel attachments.
+    Delegates file processing to bank-specific upload endpoints.
+    """
     
     def __init__(self):
         self.temp_dir = tempfile.gettempdir()
-        self.parser = excel_parser
+        self.bank_detector = bank_detector
     
     async def process_incoming_email(
         self,
@@ -39,8 +43,8 @@ class EmailIngestionService:
         
         Args:
             db: Database session
-            to_email: Recipient email (user@cfoseyfo.com)
-            from_email: Sender email
+            to_email: Recipient email (ingestion@cfoseyfo.com)
+            from_email: Sender email (user's registered email)
             subject: Email subject
             attachments: List of file attachments
             
@@ -59,14 +63,13 @@ class EmailIngestionService:
         db.refresh(email_log)
         
         try:
-            # Identify user and company from email alias
-            user_info = self._get_user_from_alias(db, to_email)
+            # Identify user and company from sender email
+            user_info = self._get_user_from_sender(db, from_email)
             if not user_info:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"No user found for email alias: {to_email}"
+                    detail=f"No user found for sender email: {from_email}"
                 )
-            
             email_log.user_id = user_info["user_id"]
             email_log.company_id = user_info["company_id"]
             email_log.status = 'PROCESSING'
@@ -124,7 +127,7 @@ class EmailIngestionService:
             temp_file_path = await self._save_temp_file(attachment)
             
             # Calculate file hash and check for duplicates
-            file_hash = self.parser._calculate_file_hash(temp_file_path)
+            file_hash = self._calculate_file_hash(temp_file_path)
             
             existing_attachment = db.query(EmailAttachment).filter(
                 EmailAttachment.file_hash == file_hash
@@ -143,59 +146,53 @@ class EmailIngestionService:
                 email_log_id=email_log.id,
                 filename=attachment.filename or "unknown.xlsx",
                 file_hash=file_hash,
-                storage_path=temp_file_path,
-                file_size=len(await attachment.read()),
                 status='UPLOADED'
             )
             db.add(attachment_record)
             db.commit()
             db.refresh(attachment_record)
             
-            # Reset file position after read
+            # Detect bank from filename
+            detected_bank = self.bank_detector.detect_bank_from_filename(attachment.filename)
+            attachment_record.detected_bank = detected_bank
+            db.commit()
+            
+            # Get company for this attachment
+            company = db.query(Company).filter(Company.id == company_id).first()
+            if not company:
+                raise HTTPException(status_code=404, detail="Company not found")
+            
+            # Reset file position and delegate to bank-specific endpoint
             await attachment.seek(0)
             
-            # Parse Excel file
-            parse_result = self.parser.parse_file(temp_file_path, company_id)
+            # Call appropriate bank upload endpoint
+            upload_result = await self._delegate_to_bank_endpoint(
+                db, detected_bank, attachment, company
+            )
             
-            if not parse_result["success"]:
+            if not upload_result["success"]:
                 attachment_record.status = 'FAILED'
-                attachment_record.error_message = parse_result["error"]
+                attachment_record.error_message = upload_result.get("error", "Processing failed")
                 db.commit()
                 return {
                     "success": False,
                     "filename": attachment.filename,
-                    "error": parse_result["error"]
+                    "error": upload_result.get("error", "Processing failed")
                 }
             
-            # Update attachment with parse results
-            attachment_record.detected_bank = parse_result["bank_code"]
-            attachment_record.status = 'PARSED'
-            attachment_record.transactions_count = parse_result["transaction_count"]
-            db.commit()
-            
-            # Create transactions
-            created_transactions = 0
-            for transaction_data in parse_result["transactions"]:
-                transaction = Transaction(
-                    **transaction_data,
-                    source_id=attachment_record.id
-                )
-                db.add(transaction)
-                created_transactions += 1
-            
-            # Final status update
+            # Update attachment with processing results
             attachment_record.status = 'PROCESSED'
             attachment_record.processed_at = datetime.now()
-            attachment_record.transactions_count = created_transactions
+            attachment_record.transactions_count = upload_result.get("transaction_count", 0)
             db.commit()
             
             return {
                 "success": True,
                 "filename": attachment.filename,
                 "attachment_id": str(attachment_record.id),
-                "detected_bank": parse_result["bank_code"],
-                "bank_name": parse_result["bank_name"],
-                "transactions_count": created_transactions
+                "detected_bank": detected_bank,
+                "bank_name": upload_result.get("bank_name", detected_bank.upper()),
+                "transactions_count": upload_result.get("transaction_count", 0)
             }
             
         except Exception as e:
@@ -229,18 +226,80 @@ class EmailIngestionService:
         
         return temp_file_path
     
-    def _get_user_from_alias(self, db: Session, alias_email: str) -> Optional[Dict]:
-        """Get user and company info from email alias."""
-        alias_record = db.query(EmailAlias).filter(
-            EmailAlias.alias_email == alias_email,
-            EmailAlias.is_active == True
-        ).first()
+    def _calculate_file_hash(self, file_path: str) -> str:
+        """Calculate SHA-256 hash of file."""
+        import hashlib
+        sha256_hash = hashlib.sha256()
         
-        if alias_record:
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        
+        return sha256_hash.hexdigest()
+    
+    async def _delegate_to_bank_endpoint(
+        self,
+        db: Session,
+        detected_bank: str,
+        attachment: UploadFile,
+        company: Company
+    ) -> Dict:
+        """Delegate file processing to bank-specific upload endpoint."""
+        from ..routes.transactions import upload_enpara_excel, upload_akbank_excel, upload_yapikredi_excel
+        
+        try:
+            await attachment.seek(0)
+            
+            if detected_bank == "enpara":
+                result = await upload_enpara_excel(file=attachment, db=db, current_company=company)
+                result_dict = result.dict() if hasattr(result, 'dict') else result
+                return {
+            "success": True,
+            "bank_name": "Enpara",
+            "transaction_count": result_dict.get("inserted", 0)
+}
+            
+            elif detected_bank == "akbank":
+                result = await upload_akbank_excel(file=attachment, db=db, current_company=company)
+                return {
+                    "success": True,
+                    "bank_name": "Akbank",
+                    "transaction_count": result.get("transaction_count", 0)
+                }
+            
+            elif detected_bank == "yapikredi":
+                result = await upload_yapikredi_excel(file=attachment, db=db, current_company=company)
+                return {
+                    "success": True,
+                    "bank_name": "Yapı Kredi",
+                    "transaction_count": result.get("transaction_count", 0)
+                }
+            
+            else:
+                return {
+                    "success": False,
+                    "error": f"Unsupported bank: {detected_bank}"
+                }
+        
+        except Exception as e:
+            logger.error(f"Error in bank endpoint delegation for {detected_bank}: {str(e)}")
             return {
-                "user_id": alias_record.user_id,
-                "company_id": alias_record.company_id,
-                "original_email": alias_record.original_email
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _get_user_from_sender(self, db: Session, sender_email: str) -> Optional[Dict]:
+        """Get user and company info from sender email."""
+        from ..models.user import User
+        user_record = db.query(User).filter(
+            User.email == sender_email,
+            User.is_active == True
+        ).first()
+        if user_record:
+            return {
+                "user_id": user_record.id,
+                "company_id": user_record.company_id,
+                "original_email": user_record.email
             }
         return None
     

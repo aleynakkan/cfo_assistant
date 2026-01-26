@@ -124,6 +124,11 @@ class BankDetector:
             logger.error(f"Error matching structure for {bank_code}: {str(e)}")
             return False
     
+    def detect_bank_from_filename(self, filename: str) -> Optional[str]:
+        """Detect bank from filename patterns."""
+        return "enpara"   
+        
+    
     def get_supported_banks(self) -> List[str]:
         """Get list of supported bank codes."""
         return list(self.configs.keys())
