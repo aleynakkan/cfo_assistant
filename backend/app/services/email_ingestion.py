@@ -291,17 +291,21 @@ class EmailIngestionService:
     def _get_user_from_sender(self, db: Session, sender_email: str) -> Optional[Dict]:
         """Get user and company info from sender email."""
         from ..models.user import User
+        from ..models.company import Company
         user_record = db.query(User).filter(
             User.email == sender_email,
             User.is_active == True
         ).first()
-        if user_record:
-            return {
-                "user_id": user_record.id,
-                "company_id": user_record.company_id,
-                "original_email": user_record.email
-            }
-        return None
+        if not user_record:
+            return None
+        # Find company where user is owner
+        company = db.query(Company).filter(Company.owner_id == user_record.id).first()
+        company_id = company.id if company else None
+        return {
+            "user_id": user_record.id,
+            "company_id": company_id,
+            "original_email": user_record.email
+        }
     
     def _is_excel_file(self, filename: Optional[str]) -> bool:
         """Check if file is an Excel file."""
@@ -311,41 +315,7 @@ class EmailIngestionService:
         excel_extensions = ['.xlsx', '.xls', '.xlsm', '.xltx', '.xltm']
         return any(filename.lower().endswith(ext) for ext in excel_extensions)
     
-    def create_email_alias(
-        self,
-        db: Session,
-        user_id: int,
-        company_id: int,
-        original_email: str
-    ) -> EmailAlias:
-        """Create email alias for user. Format: username@cfoseyfo.com"""
-        # Extract username from original email
-        username = original_email.split('@')[0]
-        alias_email = f"{username}@cfoseyfo.com"
-        
-        # Check if alias already exists
-        existing = db.query(EmailAlias).filter(
-            EmailAlias.alias_email == alias_email
-        ).first()
-        
-        if existing:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Email alias {alias_email} already exists"
-            )
-        
-        # Create new alias
-        alias = EmailAlias(
-            user_id=user_id,
-            company_id=company_id,
-            original_email=original_email,
-            alias_email=alias_email
-        )
-        db.add(alias)
-        db.commit()
-        db.refresh(alias)
-        
-        return alias
+    # Email alias creation is no longer used in the new workflow
     
     def rollback_email_transactions(
         self,
