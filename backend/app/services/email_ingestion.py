@@ -181,7 +181,6 @@ class EmailIngestionService:
             db.commit()
             
             # Clean up temp file
-            import os
             if os.path.exists(temp_file):
                 os.remove(temp_file)
             
