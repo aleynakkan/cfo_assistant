@@ -56,6 +56,11 @@ def read_root():
     return {"message": "CFO Assistant API çalışıyor"}
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "service": "cfo-assistant-api"}
+
+
 app.include_router(
     auth_router,
     tags=["auth"],

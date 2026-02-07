@@ -63,6 +63,18 @@ class EmailIngestionService:
         db.refresh(email_log)
         
         try:
+            # Skip system/automated emails that don't require processing
+            if self._is_system_email(from_email):
+                email_log.status = 'SKIPPED'
+                email_log.error_message = f"Skipped system email from: {from_email}"
+                db.commit()
+                
+                return {
+                    "status": "skipped",
+                    "email_log_id": str(email_log.id),
+                    "message": f"System email from {from_email} skipped"
+                }
+            
             # Identify user and company from sender email
             user_info = self._get_user_from_sender(db, from_email)
             if not user_info:
@@ -351,6 +363,30 @@ class EmailIngestionService:
             db.rollback()
             logger.error(f"Error rolling back transactions for {attachment_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+    
+    def _is_system_email(self, email: str) -> bool:
+        """
+        Check if email is from a system/automated source that should be ignored.
+        """
+        if not email:
+            return True
+            
+        system_domains = [
+            'no-reply@',
+            'noreply@',
+            'do-not-reply@',
+            'donotreply@',
+            'accounts.google.com',
+            'security@',
+            'notification@',
+            'alerts@',
+            'support@',
+            'system@',
+            'automated@'
+        ]
+        
+        email_lower = email.lower()
+        return any(domain in email_lower for domain in system_domains)
 
 # Singleton instance
 email_ingestion_service = EmailIngestionService()
