@@ -164,10 +164,26 @@ class EmailIngestionService:
             db.commit()
             db.refresh(attachment_record)
             
-            # Detect bank from filename
-            detected_bank = self.bank_detector.detect_bank_from_filename(attachment.filename)
+            # Detect bank from Excel content (improved detection)
+            # Save attachment temporarily for analysis
+            temp_file = f"/tmp/{attachment.filename}_{attachment_record.id}"
+            with open(temp_file, "wb") as f:
+                content = await attachment.read()
+                f.write(content)
+            
+            # Use improved bank detection from Excel content
+            detected_bank = self.bank_detector.detect_bank_from_excel(temp_file)
+            if not detected_bank:
+                # Fallback to filename detection
+                detected_bank = self.bank_detector.detect_bank_from_filename(attachment.filename)
+                
             attachment_record.detected_bank = detected_bank
             db.commit()
+            
+            # Clean up temp file
+            import os
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
             
             # Get company for this attachment
             company = db.query(Company).filter(Company.id == company_id).first()
