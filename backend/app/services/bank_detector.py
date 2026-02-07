@@ -168,16 +168,23 @@ class BankDetector:
                     if pd.notna(cell):
                         all_text += str(cell).lower() + " "
             
-            logger.info(f"Excel content preview: {all_text[:200]}...")
+            logger.info(f"=== BANK DETECTION DEBUG ===")
+            logger.info(f"Excel content length: {len(all_text)}")
+            logger.info(f"Excel content preview: {all_text[:500]}...")
+            logger.info(f"Excel content tail: ...{all_text[-200:]}")
             
             # Check each bank's identifiers
             for bank_code, config in self.configs.items():
                 identifiers = config.get("identifiers", [])
+                logger.info(f"Checking {bank_code} identifiers: {identifiers}")
                 for identifier in identifiers:
                     if identifier.lower() in all_text:
-                        logger.info(f"Found bank identifier '{identifier}' for {bank_code}")
+                        logger.info(f"✅ FOUND bank identifier '{identifier}' for {bank_code}")
                         return bank_code
+                    else:
+                        logger.info(f"❌ NOT found: '{identifier}' in content")
             
+            logger.info("❌ No bank identifiers found in Excel content")
             return None
             
         except Exception as e:
