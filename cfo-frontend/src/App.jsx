@@ -678,7 +678,7 @@ function DashboardView({
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}{" "}
-                <span style={{ fontSize: "18px" }}>TRY</span>
+                <span style={{ fontSize: "18px" }}>TR</span>
               </div>
               <div style={{ fontSize: "12px", opacity: 0.8 }}>
                 Başlangıç: {Number(cashPosition.initial_balance).toLocaleString("tr-TR", {

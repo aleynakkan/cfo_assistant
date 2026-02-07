@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import Optional, List
 import logging
-
 from ..core.database import get_db
 from ..core.deps import get_current_user, get_current_company
 from ..models.user import User

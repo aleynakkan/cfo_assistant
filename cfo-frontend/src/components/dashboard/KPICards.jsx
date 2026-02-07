@@ -15,7 +15,7 @@ export default function KPICards({ income, expense, net }) {
       </div>
 
       <div className={styles.card}>
-        <div className={styles.label}>Toplam Giderrr</div>
+        <div className={styles.label}>Toplam Gider</div>
         <div className={styles.value}>
           {Number(expense || 0).toLocaleString("tr-TR", {
             minimumFractionDigits: 2,
@@ -26,7 +26,7 @@ export default function KPICards({ income, expense, net }) {
       </div>
 
       <div className={styles.card}>
-        <div className={styles.label}>Net Nakit Akışı</div>
+        <div className={styles.label}>Net Nakit</div>
         <div className={`${styles.value} ${net >= 0 ? styles.positive : styles.negative}`}>
           {Number(net || 0).toLocaleString("tr-TR", {
             minimumFractionDigits: 2,

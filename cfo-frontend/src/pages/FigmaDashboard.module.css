@@ -91,10 +91,10 @@
 }
 
 .heroLabel {
-  font-size: var(--font-size-xl);
-  font-weight: 400;
-  margin-bottom: 0;
-  opacity: 0.95;
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  margin: 0 0 27px 0;
+  color: #ffffff;
   position: relative;
   z-index: 1;
   line-height: 1.4;
@@ -121,7 +121,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-sm);
   position: relative;
   z-index: 1;
 }
@@ -172,15 +172,17 @@
 }
 
 .kpiTitle {
-  font-size: var(--font-size-xl);
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.85);
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  color: #0d1b1e;
+  margin: 0 0 27px 0;
   line-height: 1.4;
+  text-align: left;
 }
 
 .kpiChange {
   font-size: var(--font-size-base);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .kpiChange.positive {
@@ -302,6 +304,13 @@
   font-weight: 500;
   color: var(--text-dark);
   margin: 0 0 27px 0;
+}
+
+.kontrolPaneliTitle {
+  margin: 0 0 27px 0;
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+  color: #0d1b1e;
 }
 
 .placeholder {

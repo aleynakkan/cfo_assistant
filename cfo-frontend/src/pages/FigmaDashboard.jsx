@@ -349,7 +349,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
             <div className={styles.heroLabel}>Tahmini Nakit Pozisyonu</div>
             <div className={styles.heroValue}>
               {fmt(estimatedCash, 0, 2)}
-              <span className={styles.heroCurrency}>TRY</span>
+              <span className={styles.heroCurrency}>TL</span>
             </div>
             {cashPosition?.change_30_days_percent !== undefined && (
               <div className={styles.heroChangeIndicator}>
@@ -368,7 +368,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
             </div>
             <div className={styles.kpiValue}>
               {filteredKpis.loading ? "..." : fmt(filteredKpis.totalIncome, 0, 0)}
-              <span className={styles.kpiCurrency}>TRY</span>
+              <span className={styles.kpiCurrency}>TL</span>
             </div>
           </div>
 
@@ -379,7 +379,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
             </div>
             <div className={styles.kpiValue}>
               {filteredKpis.loading ? "..." : fmt(filteredKpis.totalExpense, 0, 0)}
-              <span className={styles.kpiCurrency}>TRY</span>
+              <span className={styles.kpiCurrency}>TL</span>
             </div>
           </div>
 
@@ -390,7 +390,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
             </div>
             <div className={styles.kpiValue}>
               {filteredKpis.loading ? "..." : fmt(filteredKpis.netCash, 0, 2)}
-              <span className={styles.kpiCurrency}>TRY</span>
+              <span className={styles.kpiCurrency}>TL</span>
             </div>
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
         {/* Kontrol Paneli - Matching Health (Eski Görünüm, Yeni Fonksiyonalite) */}
         {matchHealth && (
           <div style={{ marginBottom: "24px" }}>
-            <h2 style={{ margin: "0 0 27px 0", fontSize: "var(--font-size-h2)", fontWeight: 500, color: "#0d1b1e" }}>
+            <h2 className={styles.kontrolPaneliTitle}>
               Kontrol Paneli
             </h2>
             
