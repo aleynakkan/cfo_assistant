@@ -117,6 +117,8 @@ export default function EditTransactionModal({
             Kategori
           </label>
           <select
+            id="edit-transaction-category"
+            name="editTransactionCategory"
             value={category}
             onChange={(e) => {
               setCategory(e.target.value);

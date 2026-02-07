@@ -70,7 +70,7 @@ function App() {
   const [exceptionsLoading, setExceptionsLoading] = useState(false);
 
   // CFO Profile state
-  const [cfoProfile, setCfoProfile] = useState(null);
+
 
   // User Profile state
   const [userName, setUserName] = useState(() => {
@@ -111,7 +111,7 @@ function App() {
     setMatchHealth(null);
     setExceptions([]);
     setExceptionsOpen(false);
-    setCfoProfile(null);
+
     setUserName("Kevin");
     localStorage.removeItem("user_name");
     setError(null);
@@ -338,21 +338,7 @@ function App() {
       console.warn("Matching health alınamadı:", e); 
     }
 
-    // 7) CFO Profile
-    try {
-      const cfRes = await apiFetch(
-        `/dashboard/cfo-profile`,
-        {},
-        usedToken
-      );
-      if (cfRes.ok) {
-        const cfData = await cfRes.json();
-        setCfoProfile(cfData);
-        console.log("✓ CFO Profile loaded:", cfData);
-      }
-    } catch(e) {
-      console.warn("CFO Profile alınamadı:", e);
-    }
+
 
     setSummary(summaryData);
     setTransactions(txData);
@@ -580,7 +566,7 @@ function DashboardView({
   exceptionsLoading,
   exceptionsKind,
   loadExceptions,
-  cfoProfile,
+
 }) {
   // Transaction pagination state
   const [visibleTransactionCount, setVisibleTransactionCount] = useState(10);
@@ -621,6 +607,8 @@ function DashboardView({
 
           <div style={{ fontSize: "var(--font-size-body)", display: "flex", alignItems: "center", gap: "8px" }}>
             <select
+              id="global-filter"
+              name="globalFilter"
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               style={{
@@ -2621,6 +2609,8 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                           <Td role="gridcell">{tx.source}</Td>
                           <Td role="gridcell" onClick={(e) => e.stopPropagation()}>
                             <select
+                              id={`transaction-category-${tx.id}`}
+                              name={`transactionCategory-${tx.id}`}
                               value={tx.category || ""}
                               onChange={(e) => handleCategoryChange(tx.id, e.target.value)}
                               style={{
@@ -3053,6 +3043,8 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 13, color: "#374151", display: "block", marginBottom: 8 }}>Banka Seçin</label>
               <select
+                id="bank-selection"
+                name="bankSelection"
                 value={selectedBank}
                 onChange={(e) => setSelectedBank(e.target.value)}
                 style={{
@@ -3313,6 +3305,8 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                     Yön
                   </label>
                   <select
+                    id="transaction-direction"
+                    name="transactionDirection"
                     value={form.direction}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, direction: e.target.value }))
@@ -3382,6 +3376,8 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                     Tip
                   </label>
                   <select
+                    id="planned-item-type"
+                    name="plannedItemType"
                     value={plannedForm.type}
                     onChange={(e) =>
                       setPlannedForm((f) => ({ ...f, type: e.target.value }))
@@ -3404,6 +3400,8 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                     Yön
                   </label>
                   <select
+                    id="planned-item-direction"
+                    name="plannedItemDirection"
                     value={plannedForm.direction}
                     onChange={(e) =>
                       setPlannedForm((f) => ({ ...f, direction: e.target.value }))

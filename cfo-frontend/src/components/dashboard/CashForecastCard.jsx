@@ -80,6 +80,8 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
         <h3 className={styles.title}>Nakit Tahmini</h3>
         <div>
           <select
+            id="cash-forecast-period"
+            name="cashForecastPeriod"
             value={period}
             onChange={(e) => {
               const newPeriod = Number(e.target.value);

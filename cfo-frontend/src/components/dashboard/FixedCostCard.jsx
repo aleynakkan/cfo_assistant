@@ -246,6 +246,8 @@ export default function FixedCostCard({ data, token }) {
         <h3 className={styles.cardTitle}>Sabit Gider Analizi</h3>
         <div className={styles.dateFilter}>
           <select 
+            id="fixed-cost-date-filter"
+            name="fixedCostDateFilter"
             value={dateFilter} 
             onChange={(e) => setDateFilter(e.target.value)}
             className={styles.filterSelect}

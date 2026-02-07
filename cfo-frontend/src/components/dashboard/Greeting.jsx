@@ -11,7 +11,7 @@ export default function Greeting({ userName = "Kevin" }) {
         <h1>{greeting}, {userName} 👋</h1>
         <p>Nakit akışınız ve gelir-gider durumunuz bir bakışta</p>
       </div>
-      <select className={styles.filter}>
+      <select id="greeting-filter" name="greetingFilter" className={styles.filter}>
         <option>Tüm zamanlar</option>
         <option>Son 30 gün</option>
         <option>Bu ay</option>

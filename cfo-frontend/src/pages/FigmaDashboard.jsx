@@ -82,17 +82,13 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
           );
         } else if (item.id === "partial") {
           // PARTIAL = status === "PARTIAL" olan planned kalemler
-          const pRes = await fetch(`${API_BASE}/planned`, {
-            headers: { "Authorization": `Bearer ${token}` },
-          });
+          const pRes = await apiClient.withAuth(token).get('/planned');
           if (pRes.ok) {
             const planned = await pRes.json();
             filtered = planned.filter(p => p.status === "PARTIAL");
           }
         } else if (item.id === "overdue" || item.id === "upcoming") {
-          const pRes = await fetch(`${API_BASE}/planned`, {
-            headers: { "Authorization": `Bearer ${token}` },
-          });
+          const pRes = await apiClient.withAuth(token).get('/planned');
           if (pRes.ok) {
             const planned = await pRes.json();
             const today = new Date();
@@ -129,12 +125,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
     setDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/matches/${matchId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const res = await apiClient.withAuth(token).delete(`/matches/${matchId}`);
 
       if (!res.ok) throw new Error("Silme başarısız");
 
@@ -152,9 +143,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
   async function fetchFilteredKpis(filter) {
     setFilteredKpis(prev => ({ ...prev, loading: true }));
     try {
-      const res = await fetch(`${API_BASE}/transactions`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await apiClient.withAuth(token).get('/transactions');
       if (!res.ok) throw new Error("Transactions yüklenemedi");
       
       const transactions = await res.json();
@@ -214,9 +203,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
     try {
       setSuggestionsLoading(true);
-      const res = await fetch(`${API_BASE}/planned/${item.id}/match-suggestions`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await apiClient.withAuth(token).get(`/planned/${item.id}/match-suggestions`);
       if (!res.ok) throw new Error("Öneriler alınamadı");
       const data = await res.json();
       setSuggestions(data.suggestions || []);
@@ -241,15 +228,11 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
       setMatchSubmitting(true);
       setMatchMessage("");
 
-      const res = await fetch(`${API_BASE}/matches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          planned_item_id: activePlanned.id,
-          transaction_id: selectedTx.transaction_id,
-          matched_amount: Number(matchAmount),
-          match_type: "MANUAL",
-        }),
+      const res = await apiClient.withAuth(token).post('/matches', {
+        planned_item_id: activePlanned.id,
+        transaction_id: selectedTx.transaction_id,
+        matched_amount: Number(matchAmount),
+        match_type: "MANUAL",
       });
 
       const data = await res.json().catch(() => ({}));
@@ -276,10 +259,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
     setDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/planned/${plannedId}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await apiClient.withAuth(token).delete(`/planned/${plannedId}`);
       if (!res.ok) throw new Error("Silme başarısız");
       setDeleteMessage("Planlanmış kalem silindi ✓");
       setMatchingDetails(prev => prev.filter(p => p.id !== plannedId));
@@ -296,12 +276,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
     setDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/planned/${plannedId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const res = await apiClient.withAuth(token).delete(`/planned/${plannedId}`);
 
       if (!res.ok) throw new Error("Silme başarısız");
 
@@ -322,6 +297,8 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
         <div className={styles.header}>
           <h1 className={styles.greeting}>{greeting}, {userName}! 👋</h1>
           <select 
+            id="date-filter"
+            name="dateFilter"
             className={styles.filterSelect}
             value={dateFilter}
             onChange={handleDateFilterChange}
