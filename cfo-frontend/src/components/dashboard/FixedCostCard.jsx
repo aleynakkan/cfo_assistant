@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { apiClient } from '../../api/client';
 import styles from "./FixedCostCard.module.css";
 
 // Category -> Color mapping
@@ -170,18 +171,13 @@ export default function FixedCostCard({ data, token }) {
   const [loading, setLoading] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
   // Backend'den tarih filtresine göre veri çek
   useEffect(() => {
     const fetchFixedCosts = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${API_BASE}/dashboard/fixed-costs-analysis?period=${dateFilter}`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
+        const res = await apiClient.withAuth(token).get(
+          `/dashboard/fixed-costs-analysis?period=${dateFilter}`
         );
 
         if (!res.ok) {
@@ -202,7 +198,7 @@ export default function FixedCostCard({ data, token }) {
     };
 
     fetchFixedCosts();
-  }, [dateFilter, token, API_BASE]);
+  }, [dateFilter, token]);
 
   // Debug log
   console.log("FixedCostCard received data:", data);

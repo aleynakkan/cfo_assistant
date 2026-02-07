@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiClient } from "../api/client";
 import styles from "./DataManagement.module.css";
 
 export default function DataManagement() {
@@ -24,11 +25,7 @@ export default function DataManagement() {
 
   const fetchTransactions = async () => {
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(
-        `${API_BASE}/transactions`,
-        { headers }
-      );
+      const response = await apiClient.get('/transactions', { headers });
       if (response.ok) {
         const data = await response.json();
         setTransactions(Array.isArray(data) ? data : []);
@@ -40,11 +37,7 @@ export default function DataManagement() {
 
   const fetchPlannedItems = async () => {
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(
-        `${API_BASE}/planned`,
-        { headers }
-      );
+      const response = await apiClient.get('/planned', { headers });
       if (response.ok) {
         const data = await response.json();
         setPlannedItems(Array.isArray(data) ? data : []);

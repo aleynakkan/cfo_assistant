@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiClient } from '../api/client';
 import styles from './FigmaDashboard.module.css';
 import matchModalStyles from '../components/MatchModal.module.css';
 import FixedCostCard from '../components/dashboard/FixedCostCard';
@@ -33,8 +34,6 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
   const [matchSubmitting, setMatchSubmitting] = useState(false);
   const [matchMessage, setMatchMessage] = useState("");
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
   const fmt = (n, min = 2, max = 2) =>
     Number(n || 0).toLocaleString("tr-TR", {
       minimumFractionDigits: min,
@@ -68,11 +67,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
     setMatchingDetails([]);
 
     try {
-      const res = await fetch(`${API_BASE}/matches`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const res = await apiClient.withAuth(token).get('/matches');
 
       if (res.ok) {
         const allMatches = await res.json();

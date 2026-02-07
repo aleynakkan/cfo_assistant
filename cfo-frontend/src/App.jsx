@@ -9,10 +9,9 @@ import AiChatPanel from "./components/AiChatPanel";
 import ErrorToast from "./components/ErrorToast";
 import { DataMatchModal } from "./DataMatchModal.jsx";
 import tableStyles from "./components/DataTable.module.css";
+import { apiClient } from "./api/client";
 
 import InsightCard from "./components/InsightCard";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 let CATEGORY_OPTIONS = [
   "POS_GELIRI",
@@ -38,7 +37,7 @@ async function apiFetch(path, options = {}, token) {
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  return fetch(`${API_BASE}${path}`, {
+  return fetch(`${apiClient.baseURL}${path}`, {
     ...options,
     headers,
   });
