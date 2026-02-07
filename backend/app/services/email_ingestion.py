@@ -165,14 +165,8 @@ class EmailIngestionService:
             db.refresh(attachment_record)
             
             # Detect bank from Excel content (improved detection)
-            # Save attachment temporarily for analysis
-            temp_file = f"/tmp/{attachment.filename}_{attachment_record.id}"
-            with open(temp_file, "wb") as f:
-                content = await attachment.read()
-                f.write(content)
-            
-            # Use improved bank detection from Excel content
-            detected_bank = self.bank_detector.detect_bank_from_excel(temp_file)
+            # Use the same temp file for bank detection
+            detected_bank = self.bank_detector.detect_bank(temp_file_path)
             if not detected_bank:
                 # Fallback to filename detection
                 detected_bank = self.bank_detector.detect_bank_from_filename(attachment.filename)
@@ -180,21 +174,25 @@ class EmailIngestionService:
             attachment_record.detected_bank = detected_bank
             db.commit()
             
-            # Clean up temp file
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-            
             # Get company for this attachment
             company = db.query(Company).filter(Company.id == company_id).first()
             if not company:
                 raise HTTPException(status_code=404, detail="Company not found")
             
-            # Reset file position and delegate to bank-specific endpoint
-            await attachment.seek(0)
+            # Create new UploadFile from temp file for processing
+            from fastapi import UploadFile
+            import io
+            with open(temp_file_path, "rb") as f:
+                file_content = f.read()
+            
+            temp_upload = UploadFile(
+                filename=attachment.filename,
+                file=io.BytesIO(file_content)
+            )
             
             # Call appropriate bank upload endpoint
             upload_result = await self._delegate_to_bank_endpoint(
-                db, detected_bank, attachment, company
+                db, detected_bank, temp_upload, company
             )
             
             if not upload_result["success"]:
