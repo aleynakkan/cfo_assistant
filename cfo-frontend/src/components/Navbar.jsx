@@ -1,6 +1,7 @@
 import styles from './Navbar.module.css';
 import { useState } from 'react';
 import aiHeadIcon from '../assets/image_head_seyfo.svg';
+import logoName from '../assets/logo-name.svg';
 
 export default function Navbar({ view, setView, onLogout, onInitialBalance, onProfileSettings, onAiChatToggle, userName = 'Kevin' }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -10,13 +11,10 @@ export default function Navbar({ view, setView, onLogout, onInitialBalance, onPr
     <nav className={styles.navbar}>
       {/* Left: Logo */}
       <div className={styles.logo}>
-        <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-          <rect x="2" y="2" width="8" height="10" fill="#dc0005" rx="2" />
-          <rect x="12" y="2" width="8" height="10" fill="#ef3b2c" rx="2" />
-          <rect x="2" y="14" width="8" height="10" fill="#e7000b" rx="2" />
-          <rect x="12" y="14" width="8" height="10" fill="#cb181d" rx="2" />
-        </svg>
-        <span className={styles.logoText}>seyfo</span>
+        <img 
+          src={logoName} 
+          alt="Seyfo Logo" 
+        />
       </div>
 
       {/* Right: Actions */}

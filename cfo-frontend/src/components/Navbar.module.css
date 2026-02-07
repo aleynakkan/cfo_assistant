@@ -28,9 +28,9 @@
   cursor: pointer;
 }
 
-.logo svg {
-  width: 21px;
-  height: 21px;
+.logo img {
+  height: 32px;
+  width: auto;
   flex-shrink: 0;
 }
 
