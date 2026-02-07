@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { apiClient } from "../../api/client";
 import styles from "./CashForecastCard.module.css";
 
 export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
@@ -36,19 +37,11 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
     const fetchForecast = async () => {
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
-        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        
-        const response = await fetch(
-          `${API_BASE}/dashboard/forecast/${period}`,
-          { headers }
-        );
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!token) {
+          throw new Error("No auth token");
         }
         
-        const data = await response.json();
+        const data = await apiClient.withAuth(token).get(`/dashboard/forecast/${period}`);
         
         setChartData(data);
         onChartDataUpdate?.(data);

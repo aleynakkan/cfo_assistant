@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { apiClient } from '../api/client';
 import styles from './AiChatPanel.module.css';
 import {
   trackChatOpened,
@@ -10,8 +11,6 @@ import {
   trackMessageCopied,
   trackTemplateUsed,
 } from '../utils/telemetry';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const AiChatPanel = ({ token, onClose }) => {
   const panelRef = useRef(null);
@@ -127,21 +126,7 @@ const AiChatPanel = ({ token, onClose }) => {
     trackQuerySubmitted(query.trim(), isTemplate);
 
     try {
-      const response = await fetch(`${API_BASE}/ai/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ question: query.trim() }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await apiClient.withAuth(token).post('/ai/query', { question: query.trim() });
       const responseTime = Date.now() - queryStartTimeRef.current;
 
       const assistantMessage = {

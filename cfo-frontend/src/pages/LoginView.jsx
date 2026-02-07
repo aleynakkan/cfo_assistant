@@ -1,7 +1,6 @@
 import { useState } from 'react';
+import { apiClient } from '../api/client';
 import styles from './LoginView.module.css';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function LoginView({ onLoginSuccess }) {
   const [email, setEmail] = useState('seyfo@gmail.com');
@@ -25,7 +24,7 @@ export default function LoginView({ onLoginSuccess }) {
       formData.append('username', email);  // Swagger UI uyumluluğu: 'username' parametresi
       formData.append('password', password);
 
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const res = await fetch(`${apiClient.baseURL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: formData,

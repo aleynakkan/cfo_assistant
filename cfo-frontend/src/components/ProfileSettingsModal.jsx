@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiClient } from '../api/client';
 import styles from './ProfileSettingsModal.module.css';
 
 export default function ProfileSettingsModal({ isOpen, onClose, currentName, onNameChange, token, onInitialBalanceSuccess, onError }) {
@@ -36,26 +37,11 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
 
     try {
       const token_str = token || localStorage.getItem('auth_token') || '';
-      const headers = token_str ? { 'Authorization': `Bearer ${token_str}` } : {};
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-      const response = await fetch(`${API_BASE}/company/initial-balance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-        body: JSON.stringify({
-          initial_balance: parseFloat(initialBalance),
-          initial_balance_date: balanceDate,
-        }),
+      await apiClient.withAuth(token_str).post('/company/initial-balance', {
+        initial_balance: parseFloat(initialBalance),
+        initial_balance_date: balanceDate,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Başlangıç bakiyesi kaydedilemedi');
-      }
-
       setBalanceMessage('Başlangıç bakiyesi başarıyla kaydedildi!');
       onInitialBalanceSuccess?.();
       setTimeout(() => {

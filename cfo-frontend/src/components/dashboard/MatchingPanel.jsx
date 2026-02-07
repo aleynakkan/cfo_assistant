@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiClient } from "../../api/client";
 import styles from "./MatchingPanel.module.css";
 
 export default function MatchingPanel({ data, token, onMatchDeleted }) {
@@ -20,8 +21,6 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
 
   if (!data) return null;
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
   const items = [
     { id: "auto", label: "Otomatik Eşleşen", value: data.auto_matched, color: "#10b981", canDelete: true },
     { id: "manual", label: "Manuel Eşleşen", value: data.manual_matched, color: "#3b82f6", canDelete: true },
@@ -38,15 +37,8 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
 
     try {
       // Tüm matches'i getir
-      const res = await fetch(`${API_BASE}/matches`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        const allMatches = await res.json();
-        let filtered = [];
+      const allMatches = await apiClient.withAuth(token).get("/matches");
+      let filtered = [];
 
         if (item.id === "auto") {
           filtered = allMatches.filter(m => m.match_type === "AUTO");
@@ -57,41 +49,28 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
           );
         } else if (item.id === "partial") {
           // Kısmi eşleşenleri getir (PARTIAL status'lu planned items)
-          const pRes = await fetch(`${API_BASE}/planned`, {
-            headers: { "Authorization": `Bearer ${token}` },
-          });
-          if (pRes.ok) {
-            const planned = await pRes.json();
-            filtered = planned.filter(p => p.status === "PARTIAL");
-          }
+          const planned = await apiClient.withAuth(token).get("/planned");
+          filtered = planned.filter(p => p.status === "PARTIAL");
         } else if (item.id === "overdue" || item.id === "upcoming") {
           // Overdue ve upcoming için planned items'ı göster
-          const pRes = await fetch(`${API_BASE}/planned`, {
-            headers: { "Authorization": `Bearer ${token}` },
-          });
-          if (pRes.ok) {
-            const planned = await pRes.json();
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            if (item.id === "overdue") {
-              filtered = planned.filter(p => new Date(p.due_date) < today && p.status !== "SETTLED");
-            } else {
-              const future14 = new Date();
-              future14.setDate(future14.getDate() + 14);
-              future14.setHours(23, 59, 59, 999);
-              filtered = planned.filter(p => {
-                const d = new Date(p.due_date);
-                return d >= today && d <= future14 && p.status !== "SETTLED";
-              });
-            }
+          const planned = await apiClient.withAuth(token).get("/planned");
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          if (item.id === "overdue") {
+            filtered = planned.filter(p => new Date(p.due_date) < today && p.status !== "SETTLED");
+          } else {
+            const future14 = new Date();
+            future14.setDate(future14.getDate() + 14);
+            future14.setHours(23, 59, 59, 999);
+            filtered = planned.filter(p => {
+              const d = new Date(p.due_date);
+              return d >= today && d <= future14 && p.status !== "SETTLED";
+            });
           }
         }
 
         setMatchingDetails(filtered);
-      } else {
-        throw new Error("Veriler yüklenemedi");
-      }
     } catch (err) {
       console.error(err);
       setDeleteMessage(`Hata: ${err.message}`);
@@ -105,14 +84,7 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
 
     setDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/matches/${matchId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Silme başarısız");
+      await apiClient.withAuth(token).delete(`/matches/${matchId}`);
 
       setDeleteMessage("Eşleşme silindi ✓");
       setMatchingDetails(prev => prev.filter(m => m.id !== matchId && m.match_id !== matchId));
@@ -135,11 +107,7 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
 
     try {
       setSuggestionsLoading(true);
-      const res = await fetch(`${API_BASE}/planned/${item.id}/match-suggestions`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Öneriler alınamadı");
-      const data = await res.json();
+      const data = await apiClient.withAuth(token).get(`/planned/${item.id}/match-suggestions`);
       setSuggestions(data.suggestions || []);
     } catch (e) {
       setMatchMessage(`Hata: ${e.message}`);
@@ -162,19 +130,12 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
       setMatchSubmitting(true);
       setMatchMessage("");
 
-      const res = await fetch(`${API_BASE}/matches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          planned_item_id: activePlanned.id,
-          transaction_id: selectedTx.transaction_id,
-          matched_amount: Number(matchAmount),
-          match_type: "MANUAL",
-        }),
+      const data = await apiClient.withAuth(token).post("/matches", {
+        planned_item_id: activePlanned.id,
+        transaction_id: selectedTx.transaction_id,
+        matched_amount: Number(matchAmount),
+        match_type: "MANUAL",
       });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.detail || "Eşleştirme başarısız");
 
       setMatchMessage(`Eşleştirildi. Status: ${data.planned_status}`);
       setMatchModalOpen(false);
@@ -197,11 +158,7 @@ export default function MatchingPanel({ data, token, onMatchDeleted }) {
 
     setDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/planned/${plannedId}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Silme başarısız");
+      await apiClient.withAuth(token).delete(`/planned/${plannedId}`);
       setDeleteMessage("Planlanmış kalem silindi ✓");
       setMatchingDetails(prev => prev.filter(p => p.id !== plannedId));
       if (onMatchDeleted) onMatchDeleted();

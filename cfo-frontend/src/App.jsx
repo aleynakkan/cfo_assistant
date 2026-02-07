@@ -1587,10 +1587,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
     setDeleting(true);
     try {
       for (const id of selectedTransactions) {
-        await fetch(`${API_BASE}/transactions/${id}`, {
-          method: "DELETE",
-          headers: authHeaders(),
-        });
+        await apiClient.withAuth(token).delete(`/transactions/${id}`);
       }
       setSelectedTransactions(new Set());
       onDataChanged?.();
@@ -1609,10 +1606,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
     setDeleting(true);
     try {
       for (const id of selectedPlanned) {
-        await fetch(`${API_BASE}/planned/${id}`, {
-          method: "DELETE",
-          headers: authHeaders(),
-        });
+        await apiClient.withAuth(token).delete(`/planned/${id}`);
       }
       setSelectedPlanned(new Set());
       loadPlannedItems();
@@ -1635,9 +1629,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
 
     try {
       setSuggestionsLoading(true);
-      const res = await fetch(`${API_BASE}/planned/${item.id}/match-suggestions`, {
-        headers: authHeaders(),
-      });
+      const res = await apiClient.withAuth(token).get(`/planned/${item.id}/match-suggestions`);
       if (!res.ok) throw new Error("Öneriler alınamadı");
       const data = await res.json();
       setSuggestions(data.suggestions || []);
@@ -1667,15 +1659,11 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
       setMatchSubmitting(true);
       setMatchMessage("");
 
-      const res = await fetch(`${API_BASE}/matches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({
-          planned_item_id: activePlanned.id,
-          transaction_id: selectedTx.transaction_id,
-          matched_amount: Number(matchAmount),
-          match_type: "MANUAL",
-        }),
+      const res = await apiClient.withAuth(token).post('/matches', {
+        planned_item_id: activePlanned.id,
+        transaction_id: selectedTx.transaction_id,
+        matched_amount: Number(matchAmount),
+        match_type: "MANUAL",
       });
 
       const data = await res.json().catch(() => ({}));
@@ -1715,11 +1703,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
 
     try {
       setPlannedMatchesLoading(true);
-      const res = await fetch(`${API_BASE}/planned/${item.id}/matches`, {
-        headers: authHeaders(),
-      });
-      if (!res.ok) throw new Error("Eslesmeler alinamadi");
-      const data = await res.json();
+      const data = await apiClient.withAuth(token).get(`/planned/${item.id}/matches`);
       setPlannedMatches(data.matches || []);
     } catch (e) {
       setPlannedMatches([{ error: e.message }]);
@@ -3123,21 +3107,12 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                       successMessage = "Yapı Kredi dosyası başarıyla yüklendi";
                     }
 
-                    const res = await fetch(`${API_BASE}${endpoint}`, {
-                      method: "POST",
-                      headers: authHeaders(),
-                      body: formData,
-                    });
-
-                    if (res.ok) {
-                      alert(successMessage);
-                      setBankUploadModalOpen(false);
-                      setBankUploadFile(null);
-                      onDataChanged?.();
-                    } else {
-                      const errData = await res.json().catch(() => ({}));
-                      alert("Hata: " + (errData.detail || "Upload başarısız"));
-                    }
+                    const data = await apiClient.withAuth(token).post(endpoint, formData);
+                    
+                    alert(successMessage);
+                    setBankUploadModalOpen(false);
+                    setBankUploadFile(null);
+                    onDataChanged?.();
                   } catch (err) {
                     console.error("Upload error:", err);
                     alert("Upload sırasında hata oluştu");

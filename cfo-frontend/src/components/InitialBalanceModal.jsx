@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { apiClient } from "../api/client";
 
 export default function InitialBalanceModal({ isOpen, onClose, token, onSuccess, onError }) {
   const [initialBalance, setInitialBalance] = useState("");
@@ -19,29 +18,15 @@ export default function InitialBalanceModal({ isOpen, onClose, token, onSuccess,
 
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/company/initial-balance`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          initial_balance: parseFloat(initialBalance),
-          initial_balance_date: balanceDate,
-        }),
+      await apiClient.withAuth(token).post("/company/initial-balance", {
+        initial_balance: parseFloat(initialBalance),
+        initial_balance_date: balanceDate,
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        const errMsg = errData.detail || "Kayıt başarısız";
-        setError(errMsg);
-        if (onError) onError(errMsg);
-      } else {
-        console.log("✅ Initial balance saved successfully");
-        if (onError) onError("Başlangıç bakiyesi kaydedildi");
-        onSuccess();
-        onClose();
-      }
+      console.log("✅ Initial balance saved successfully");
+      if (onError) onError("Başlangıç bakiyesi kaydedildi");
+      onSuccess();
+      onClose();
     } catch (err) {
       const errMsg = err.message || "Beklenmeyen hata";
       setError(errMsg);
