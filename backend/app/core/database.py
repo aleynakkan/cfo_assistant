@@ -6,18 +6,21 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Use PostgreSQL from environment variable, fallback to SQLite for local dev
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+# Check environment
+ENV = os.getenv("ENV", "local")
 
-if not SQLALCHEMY_DATABASE_URL:
-    # Fallback to SQLite if DATABASE_URL not set
+# Use PostgreSQL only in production environment
+if ENV == "production":
+    SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+    if not SQLALCHEMY_DATABASE_URL:
+        raise ValueError("DATABASE_URL must be set in production environment")
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+else:
+    # Local development - use SQLite
     db_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     db_path = os.path.join(db_dir, "cfo_assistant.db")
     SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
     engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    # PostgreSQL connection
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
