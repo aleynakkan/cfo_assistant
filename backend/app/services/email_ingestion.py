@@ -286,18 +286,20 @@ class EmailIngestionService:
             
             elif detected_bank == "akbank":
                 result = await upload_akbank_excel(file=attachment, db=db, current_company=company)
+                result_dict = result.dict() if hasattr(result, 'dict') else result
                 return {
                     "success": True,
                     "bank_name": "Akbank",
-                    "transaction_count": result.get("transaction_count", 0)
+                    "transaction_count": result_dict.get("inserted", 0)
                 }
             
             elif detected_bank == "yapikredi":
                 result = await upload_yapikredi_excel(file=attachment, db=db, current_company=company)
+                result_dict = result.dict() if hasattr(result, 'dict') else result
                 return {
                     "success": True,
                     "bank_name": "Yapı Kredi",
-                    "transaction_count": result.get("transaction_count", 0)
+                    "transaction_count": result_dict.get("inserted", 0)
                 }
             
             else:
