@@ -63,17 +63,43 @@ export async function apiFetch(path, options = {}, token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  console.log("apiFetch Debug - Request:", {
+    url: `${API_BASE}${path}`,
+    options: options,
+    headers: headers
+  });
+
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
   });
 
+  console.log("apiFetch Debug - Response:", {
+    status: response.status,
+    statusText: response.statusText,
+    ok: response.ok,
+    contentType: response.headers.get('content-type')
+  });
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
+    console.log("apiFetch Debug - Error response:", error);
+    
+    // Auth error handling
+    if (response.status === 401 || response.status === 403) {
+      console.log("Auth error detected - clearing token");
+      localStorage.removeItem("auth_token");
+      // Notify parent to re-render
+      window.location.reload();
+      return;
+    }
+    
     throw new Error(error.detail || "API request failed");
   }
 
-  return response.json();
+  const responseData = await response.json();
+  console.log("apiFetch Debug - Response data:", responseData);
+  return responseData;
 }
 
 export const API_ENDPOINTS = {

@@ -118,7 +118,7 @@ function App() {
     setView("dashboard");
   }
 
-  // Kategorileri backend'ten yükle
+  // Kategorileri backend'ten yükle + Auth validation
   useEffect(() => {
     async function loadCategories() {
       try {
@@ -129,9 +129,28 @@ function App() {
         }
       } catch (e) {
         console.warn("Kategoriler backend'ten yüklenemedi, default kullaniliyor:", e);
+        // If auth error, token probably cleared by apiFetch
+        if (e.message.includes('401') || e.message.includes('403')) {
+          setToken("");
+        }
       }
     }
+    
+    async function validateToken() {
+      if (!token) return;
+      
+      try {
+        // Simple auth validation using dashboard summary
+        await apiFetch("/dashboard/summary", {}, token);
+      } catch (e) {
+        console.warn("Token validation failed:", e);
+        // apiFetch already cleared localStorage, just update state
+        setToken("");
+      }
+    }
+    
     if (token) {
+      validateToken();
       loadCategories();
     }
   }, [token]);
@@ -3107,9 +3126,28 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                       successMessage = "Yapı Kredi dosyası başarıyla yüklendi";
                     }
 
-                    const data = await apiClient.withAuth(token).post(endpoint, formData);
+                    const data = await apiFetch(endpoint, {
+                      method: "POST", 
+                      body: formData
+                    }, token);
                     
-                    alert(successMessage);
+                    // Debug: Log the response
+                    console.log("Bank Upload Modal Response:", data);
+                    console.log("data.inserted:", data.inserted);
+                    console.log("typeof data.inserted:", typeof data.inserted);
+                    console.log("Full response JSON:", JSON.stringify(data, null, 2));
+                    
+                    // Check if upload was actually successful
+                    if (data && typeof data.inserted === 'number' && data.inserted > 0) {
+                      alert(`${successMessage} - ${data.inserted} hareket yüklendi`);
+                    } else if (data && typeof data.duplicates === 'number' && data.duplicates > 0) {
+                      alert(`Dosya daha önce yüklenmiş. ${data.duplicates} mükerrer kayıt bulundu. Yeni dosya deneyin.`);
+                    } else if (data && data.message) {
+                      alert(`Uyarı: ${data.message}`);
+                    } else {
+                      alert(`Debug: Response structure: ${JSON.stringify(data)} - Dosya formatını kontrol edin.`);
+                    }
+                    
                     setBankUploadModalOpen(false);
                     setBankUploadFile(null);
                     onDataChanged?.();
