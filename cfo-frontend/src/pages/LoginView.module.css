@@ -215,11 +215,17 @@
   color: #6b7280;
   padding: 4px;
   border-radius: 4px;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .eyeIcon:hover:not(:disabled) {
   background: #f3f4f6;
+  color: #374151;
 }
 
 /* Forgot Password Link */
