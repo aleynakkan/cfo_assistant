@@ -93,3 +93,27 @@ def login(
         {"sub": str(user.id), "company_id": company.id}
     )
     return Token(access_token=access_token)
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Parola sıfırlama işlemi - MVP versiyonunda sadece başarılı response dön.
+    Gerçek implementasyonda email gönderimi ve reset token oluşturması olacak.
+    """
+    # Email'in sistemde olup olmadığını kontrol et
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        # Security: Mevcut olmayan email için de başarılı response dön
+        # Bu sayede email adresi tahmin edilemez
+        return {"message": "Eğer bu email adresi sistemde kayıtlıysa, parola sıfırlama bağlantısı gönderilmiştir."}
+    
+    # TODO: Gerçek implementasyon:
+    # 1. Reset token oluştur ve database'e kaydet
+    # 2. Email service ile reset link gönder
+    # 3. Token expiry time ayarla
+    
+    return {"message": "Eğer bu email adresi sistemde kayıtlıysa, parola sıfırlama bağlantısı gönderilmiştir."}

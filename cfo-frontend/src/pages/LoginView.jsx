@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { apiClient } from '../api/client';
 import styles from './LoginView.module.css';
+import loginpagebackground from '../assets/loginpagebackground.svg';
 
 export default function LoginView({ onLoginSuccess }) {
   const [email, setEmail] = useState('seyfo@gmail.com');
@@ -8,6 +9,10 @@ export default function LoginView({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -50,90 +55,170 @@ export default function LoginView({ onLoginSuccess }) {
     }
   }
 
+  async function handleForgotPassword(e) {
+    e.preventDefault();
+    if (!resetEmail) {
+      setError('Lütfen e-posta adresinizi giriniz');
+      return;
+    }
+
+    setResetLoading(true);
+    setError('');
+    setResetMessage('');
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append('email', resetEmail);
+
+      const res = await fetch(`${apiClient.baseURL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Parola sıfırlama işlemi başarısız');
+      }
+
+      setResetMessage('Parola sıfırlama bağlantısı e-posta adresinize gönderildi.');
+    } catch (err) {
+      setError(err.message || 'Parola sıfırlama sırasında hata oluştu');
+    } finally {
+      setResetLoading(false);
+    }
+  }
+
   return (
     <div className={styles.container}>
-      {/* Decorative Background Elements */}
-      <div className={styles.decorativeShape1}></div>
-      <div className={styles.decorativeShape2}></div>
-      <div className={styles.decorativeShape3}></div>
-      <div className={styles.decorativeShape4}></div>
-
-      {/* Right Side Tagline Box */}
-      <div className={styles.taglineBox}>
-        <p className={styles.taglineText}>
-          ERP'si olmayan KOBİ'lere CFO kalitesinde finans yönetimi, otomatik ve AI destekli.
-        </p>
-      </div>
-
-      {/* Login Card */}
-      <div className={styles.card}>
-        <div className={styles.formContainer}>
-          {/* Heading */}
-          <div className={styles.heading}>
-            <h1 className={styles.title}>Welcome back!</h1>
-            <p className={styles.subtitle}>Login to your account</p>
-          </div>
-
-          {/* Error Message */}
-          {error && <div className={styles.error}>{error}</div>}
-
-          {/* Form */}
-          <form onSubmit={handleLogin} className={styles.form}>
-            {/* Email Field */}
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={styles.input}
-                disabled={loading}
-              />
+      {/* Left Column - Login Form */}
+      <div className={styles.leftColumn}>
+        <div className={styles.loginCard}>
+          <div className={styles.formContainer}>
+            {/* Heading */}
+            <div className={styles.heading}>
+              <h1 className={styles.title}>Tekrar hoş geldiniz!</h1>
+              <p className={styles.subtitle}>Hesabınıza giriş yapın</p>
             </div>
 
-            {/* Password Field */}
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Password</label>
-              <div className={styles.passwordWrapper}>
+            {/* Error Message */}
+            {error && <div className={styles.error}>{error}</div>}
+
+            {/* Form */}
+            <form onSubmit={handleLogin} className={styles.form}>
+              {/* Email Field */}
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>E-posta Adresi</label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={styles.passwordInput}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.input}
                   disabled={loading}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={styles.eyeIcon}
-                  disabled={loading}
-                >
-                  👁️
-                </button>
               </div>
-            </div>
 
-            {/* Forgot Password Link */}
-            <button type="button" className={styles.forgotPassword}>
-              Recover Password
-            </button>
+              {/* Password Field */}
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Şifre</label>
+                <div className={styles.passwordWrapper}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={styles.passwordInput}
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={styles.eyeIcon}
+                    disabled={loading}
+                  >
+                    👁️
+                  </button>
+                </div>
+              </div>
 
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={styles.loginButton}
-            >
-              {loading ? 'Yükleniyor...' : 'Login'}
-            </button>
-          </form>
+              {/* Forgot Password Link */}
+              <button 
+                type="button" 
+                className={styles.forgotPassword}
+                onClick={() => setShowForgotPassword(true)}
+              >
+                Şifremi Unuttum
+              </button>
 
-          {/* Sign Up Link */}
-          <p className={styles.signUpText}>
-            Don't have an account? <span className={styles.signUpLink}>Sign Up</span>
-          </p>
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className={styles.loginButton}
+              >
+                {loading ? 'Yükleniyor...' : 'Giriş Yap'}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
+
+      {/* Right Column - Background Image */}
+      <div className={styles.rightColumn}>
+        <div className={styles.backgroundImageContainer}>
+          <img src={loginpagebackground} alt="" className={styles.backgroundSvg} />
+        </div>
+      </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2>Parola Sıfırlama</h2>
+              <button 
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setResetEmail('');
+                  setResetMessage('');
+                  setError('');
+                }}
+                className={styles.closeButton}
+              >
+                ×
+              </button>
+            </div>
+            
+            <form onSubmit={handleForgotPassword} className={styles.resetForm}>
+              <p className={styles.resetDescription}>
+                E-posta adresinizi girin, parola sıfırlama bağlantısını göndereceğiz.
+              </p>
+              
+              {resetMessage && <div className={styles.success}>{resetMessage}</div>}
+              {error && <div className={styles.error}>{error}</div>}
+              
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>E-posta Adresi</label>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className={styles.input}
+                  disabled={resetLoading}
+                  autoFocus
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={resetLoading || !resetEmail}
+                className={styles.resetButton}
+              >
+                {resetLoading ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
