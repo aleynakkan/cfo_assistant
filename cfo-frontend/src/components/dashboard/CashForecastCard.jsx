@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { apiClient } from "../../api/client";
+import { apiFetch } from "../../api/client";
 import styles from "./CashForecastCard.module.css";
 
 export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
@@ -17,55 +17,32 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
   const [projectedAmount, setProjectedAmount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Fallback mock veri
-  const generateMockData = (days) => {
-    const weeks = Math.ceil((days + 6) / 7);
-    const data = [];
-    const startValue = -75000;
-    
-    for (let i = 0; i <= weeks; i++) {
-      data.push({
-        name: i === 0 ? "BUGÜN" : `${i}. HAFTA`,
-        value: startValue + Math.sin(i / 2) * 30000 + Math.random() * 5000,
-      });
-    }
-    return data;
-  };
-
-  // API'dan veri yükle veya mock kullan
+  // API'dan veri yükle
   useEffect(() => {
     const fetchForecast = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("auth_token") || "";
         if (!token) {
           throw new Error("No auth token");
         }
         
-        const data = await apiClient.withAuth(token).get(`/dashboard/forecast/${period}`);
+        const data = await apiFetch(`/dashboard/forecast/${period}`, {}, token);
         
-        setChartData(data);
-        onChartDataUpdate?.(data);
-        
-        if (data.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
+          setChartData(data);
+          onChartDataUpdate?.(data);
           setProjectedAmount(data[data.length - 1].value);
         }
       } catch (error) {
         console.error("Forecast fetch error:", error);
-        
-        // Fallback: mock veri
-        const mockData = generateMockData(period);
-        setChartData(mockData);
-        onChartDataUpdate?.(mockData);
-        if (mockData.length > 0) {
-          setProjectedAmount(mockData[mockData.length - 1].value);
-        }
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchForecast();
   }, [period, estimatedCash]);
-
-  console.log("Rendering with chartData:", chartData, "amount:", projectedAmount);
 
   return (
     <div className={styles.card}>

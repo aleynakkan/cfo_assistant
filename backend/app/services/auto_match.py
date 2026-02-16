@@ -17,6 +17,7 @@ from app.models.planned_item import PlannedCashflowItem
 from app.models.planned_match import PlannedMatch
 from app.models.transaction import Transaction
 from app.services.planned_recompute import recompute_planned_status
+from app.services.counterparty_service import propagate_counterparty
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,12 @@ def auto_match_transaction(db: Session, tx: Transaction, company_id: int) -> lis
         
         # Step 8: Recompute planned item status/remaining
         recompute_planned_status(db, company_id, planned.id)
+        
+        # Step 9: Propagate counterparty (additive — never breaks existing logic)
+        try:
+            propagate_counterparty(db, company_id, tx, planned)
+        except Exception as cp_err:
+            logger.warning(f"Auto-match: counterparty propagation failed for tx {tx.id}: {cp_err}")
         
     except IntegrityError as ie:
         db.rollback()

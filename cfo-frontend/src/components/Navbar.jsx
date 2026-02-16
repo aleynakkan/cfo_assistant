@@ -33,6 +33,13 @@ export default function Navbar({ view, setView, onLogout, onInitialBalance, onPr
           <span>📁</span> Veri Yönetimi
         </button>
 
+                <button 
+          className={view === 'counterparties' ? styles.redButton : styles.outlineButton}
+          onClick={() => setView('counterparties')}
+        >
+          <span>👥</span> Cariler
+        </button>
+
         <div className={styles.divider} />
 
         <button className={styles.iconButton}>

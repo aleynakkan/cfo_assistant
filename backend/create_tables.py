@@ -9,6 +9,7 @@ from app.models.transaction import Transaction
 from app.models.planned_item import PlannedCashflowItem
 from app.models.planned_match import PlannedMatch
 from app.models.company_settings import CompanyFinancialSettings
+from app.models.counterparty import Counterparty, CounterpartyAlias
 
 def create_tables():
     """Create all tables defined in SQLAlchemy models"""

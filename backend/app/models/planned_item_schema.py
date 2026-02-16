@@ -11,6 +11,7 @@ class PlannedItemBase(BaseModel):
     amount: Decimal
     due_date: date
     counterparty: str | None = None
+    counterparty_id: int | None = None
     reference_no: str | None = None
 
 
@@ -23,6 +24,7 @@ class PlannedItemResponse(PlannedItemBase):
     status: str
     settled_amount: Decimal
     remaining_amount: Decimal
+    counterparty_id: int | None = None
     created_at: datetime
 
     class Config:

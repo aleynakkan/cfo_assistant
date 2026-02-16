@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import InitialBalanceModal from "./components/InitialBalanceModal";
 import ProfileSettingsModal from "./components/ProfileSettingsModal";
 import AiChatPanel from "./components/AiChatPanel";
+import CounterpartyView from "./pages/CounterpartyView";
 import ErrorToast from "./components/ErrorToast";
 import { DataMatchModal } from "./DataMatchModal.jsx";
 import tableStyles from "./components/DataTable.module.css";
@@ -47,7 +48,7 @@ function App() {
   const [token, setToken] = useState(() => {
     return localStorage.getItem("auth_token") || "";
   });
-  const [view, setView] = useState("dashboard"); // 'dashboard' | 'data'
+  const [view, setView] = useState("dashboard"); // 'dashboard' | 'data' | 'counterparties'
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [forecast, setForecast] = useState(null); // advanced forecast
@@ -498,6 +499,8 @@ function App() {
             token={token}
             onRefreshDashboard={loadData}
           />
+        ) : view === "counterparties" ? (
+          <CounterpartyView token={token} />
         ) : (
           <DataManagementView
             transactions={transactions}

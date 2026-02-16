@@ -34,12 +34,21 @@ export default function Sidebar({ view, setView, onLogout }) {
         </button>
 
         <button 
-          className={`${styles.navButton}`}
+          className={`${styles.navButton} ${view === 'data' ? styles.active : ''}`}
           onClick={() => setView('data')}
           title="Veri Yönetimi"
         >
           <span className={styles.icon}>📁</span>
           <span className={styles.label}>Veri Yönetimi</span>
+        </button>
+
+        <button 
+          className={`${styles.navButton} ${view === 'counterparties' ? styles.active : ''}`}
+          onClick={() => setView('counterparties')}
+          title="Cari Hesaplar"
+        >
+          <span className={styles.icon}>👥</span>
+          <span className={styles.label}>Cariler</span>
         </button>
       </div>
 

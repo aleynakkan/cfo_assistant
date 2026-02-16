@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, DateTime, Numeric, Integer, ForeignKey
+from sqlalchemy import Column, String, Date, DateTime, Numeric, Integer, ForeignKey, Index
 from sqlalchemy.sql import func
 from app.core.database import Base
 import uuid
@@ -14,6 +14,7 @@ class PlannedCashflowItem(Base):
     due_date = Column(Date, nullable=False)
 
     counterparty = Column(String, nullable=True)
+    counterparty_id = Column(Integer, ForeignKey("counterparties.id"), nullable=True)
     reference_no = Column(String, nullable=True)
 
     status = Column(String, nullable=False, default="OPEN")  # OPEN / PARTIAL / SETTLED / CANCELLED

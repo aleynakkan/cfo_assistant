@@ -7,5 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Run migrations
-CMD ["python", "create_tables.py"]
+# Run all migrations in order:
+# 1. create_tables  - creates any new tables (counterparties, counterparty_aliases, etc.)
+# 2. migrate_counterparty - counterparty tables + FK columns + backfill
+# 3. migrate_vkn - adds vkn column + unique constraint
+CMD ["sh", "-c", "python create_tables.py && ENV=production python migrate_counterparty.py && ENV=production python migrate_vkn.py"]

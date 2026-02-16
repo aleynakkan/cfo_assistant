@@ -16,6 +16,7 @@ class Transaction(Base):
     source = Column(String, nullable=False, default="MANUAL")  # MANUAL, EMAIL, EXCEL_UPLOAD
     source_id = Column(UUID(as_uuid=True), nullable=True)  # Reference to email_attachment.id for EMAIL source
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    counterparty_id = Column(Integer, ForeignKey("counterparties.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     imported_at = Column(DateTime(timezone=True), nullable=True)  # When imported via email/excel
     external_id = Column(String, nullable=True, index=True)
