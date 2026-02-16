@@ -1,14 +1,42 @@
 steps:
+# 1) Build migration image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/cfoseyfo-test/migration-job', '-f', 'Dockerfile.migrate', '.']
   dir: 'backend'
-  
+
+# 2) Start Cloud SQL Auth Proxy (background)
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['run', 
-         '--network', 'cloudbuild',
-         '-e', 'DATABASE_URL=postgresql://postgres:$$DB_PASSWORD@34.71.139.120:5432/postgres',
-         'gcr.io/cfoseyfo-test/migration-job']
+  args:
+    - 'run'
+    - '-d'
+    - '--name=cloudsql-proxy'
+    - '--network=cloudbuild'
+    - '-v'
+    - '/cloudsql:/cloudsql'
+    - 'gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.3'
+    - '--address=0.0.0.0'
+    - '--port=5432'
+    - 'cfoseyfo-test:us-central1:cfoseyfodbqa'
+
+# 3) Wait for proxy to be ready
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['run', '--network=cloudbuild', 'busybox', 'sh', '-c', 'sleep 5']
+
+# 4) Run migrations via proxy
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'run'
+    - '--network=cloudbuild'
+    - '-e'
+    - 'DATABASE_URL=postgresql://postgres:$$DB_PASSWORD@cloudsql-proxy:5432/postgres'
+    - '-e'
+    - 'ENV=production'
+    - 'gcr.io/cfoseyfo-test/migration-job'
   secretEnv: ['DB_PASSWORD']
+
+# 5) Stop proxy
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['stop', 'cloudsql-proxy']
 
 availableSecrets:
   secretManager:
