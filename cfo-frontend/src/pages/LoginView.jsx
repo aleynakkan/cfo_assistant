@@ -4,7 +4,7 @@ import styles from './LoginView.module.css';
 import loginpagebackground from '../assets/loginpagebackground.svg';
 
 export default function LoginView({ onLoginSuccess }) {
-  const [email, setEmail] = useState('seyfo@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
