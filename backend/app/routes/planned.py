@@ -42,6 +42,7 @@ def create_planned_item(
         amount=payload.amount,
         due_date=payload.due_date,
         counterparty=payload.counterparty,
+        counterparty_id=payload.counterparty_id,
         reference_no=payload.reference_no,
         source="manual",
         settled_amount=0,

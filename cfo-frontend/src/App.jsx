@@ -1491,11 +1491,20 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
     amount: "",
     due_date: "",
     counterparty: "",
+    counterparty_id: null,
     reference_no: "",
   });
   const [plannedSubmitting, setPlannedSubmitting] = useState(false);
   const [plannedMessage, setPlannedMessage] = useState("");
   const [plannedItems, setPlannedItems] = useState([]);
+  
+  // Counterparties state
+  const [counterparties, setCounterparties] = useState([]);
+  const [counterpartiesLoaded, setCounterpartiesLoaded] = useState(false);
+  
+  // Autocomplete state for counterparty selection
+  const [showCounterpartySuggestions, setShowCounterpartySuggestions] = useState(false);
+  const [filteredCounterparties, setFilteredCounterparties] = useState([]);
   const [plannedLoading, setPlannedLoading] = useState(false);
   const [plannedError, setPlannedError] = useState(null);
 
@@ -1577,6 +1586,26 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
       setPlannedError(err.message || "Bilinmeyen hata");
     } finally {
       setPlannedLoading(false);
+    }
+  }
+
+  async function loadCounterparties() {
+    if (counterpartiesLoaded) return;
+    
+    try {
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await apiFetch(`/counterparties`, {}, token);
+      if (!res.ok) {
+        throw new Error("Cari listesi alınamadı");
+      }
+      const data = await res.json();
+      setCounterparties(data);
+      setCounterpartiesLoaded(true);
+    } catch (err) {
+      console.error("Counterparties load error:", err);
+      // Hata durumunda boş array set et
+      setCounterparties([]);
+      setCounterpartiesLoaded(true);
     }
   }
 
@@ -1681,12 +1710,14 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
       setMatchSubmitting(true);
       setMatchMessage("");
 
-      const res = await apiClient.withAuth(token).post('/matches', {
+      const payload = {
         planned_item_id: activePlanned.id,
         transaction_id: selectedTx.transaction_id,
         matched_amount: Number(matchAmount),
         match_type: "MANUAL",
-      });
+      };
+
+      const res = await apiClient.withAuth(token).post('/matches', payload);
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Eslestirme basarisiz");
@@ -2250,6 +2281,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
           amount: Number(plannedForm.amount),
           due_date: plannedForm.due_date,
           counterparty: plannedForm.counterparty || null,
+          counterparty_id: plannedForm.counterparty_id,
           reference_no: plannedForm.reference_no || null,
         }),
       }, token);
@@ -2266,6 +2298,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
         amount: "",
         due_date: "",
         counterparty: "",
+        counterparty_id: null,
         reference_no: "",
       });
 
@@ -3148,7 +3181,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                     } else if (data && data.message) {
                       alert(`Uyarı: ${data.message}`);
                     } else {
-                      alert(`Debug: Response structure: ${JSON.stringify(data)} - Dosya formatını kontrol edin.`);
+                      alert("Dosya yüklendi ancak hiç hareket işlenmedi. Dosya formatını kontrol edin.");
                     }
                     
                     setBankUploadModalOpen(false);
@@ -3470,26 +3503,111 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                     }}
                   />
                 </div>
-                <div>
+                <div style={{ position: "relative" }}>
                   <label style={{ fontSize: "var(--font-size-body)", display: "block", marginBottom: "4px" }}>
-                    Cari / Karsi Taraf
+                    Cari / Karşı Taraf
                   </label>
                   <input
                     type="text"
                     value={plannedForm.counterparty}
-                    onChange={(e) =>
-                      setPlannedForm((f) => ({
-                        ...f,
-                        counterparty: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPlannedForm((f) => ({ ...f, counterparty: value, counterparty_id: null }));
+                      
+                      // Filter suggestions
+                      if (value.length > 0) {
+                        const filtered = counterparties.filter(cp =>
+                          cp.name.toLowerCase().includes(value.toLowerCase())
+                        );
+                        setFilteredCounterparties(filtered);
+                        setShowCounterpartySuggestions(filtered.length > 0);
+                      } else {
+                        setShowCounterpartySuggestions(false);
+                      }
+                    }}
+                    onFocus={async () => {
+                      await loadCounterparties();
+                      if (plannedForm.counterparty.length > 0) {
+                        const filtered = counterparties.filter(cp =>
+                          cp.name.toLowerCase().includes(plannedForm.counterparty.toLowerCase())
+                        );
+                        setFilteredCounterparties(filtered);
+                        setShowCounterpartySuggestions(filtered.length > 0);
+                      }
+                    }}
+                    onBlur={() => {
+                      // Delay hiding suggestions to allow click
+                      setTimeout(() => setShowCounterpartySuggestions(false), 150);
+                    }}
+                    placeholder="Cari adı yazın (ör: WISE yazarak WISE YAZILIM BILIŞIM)"
                     style={{
                       width: "100%",
-                      padding: "6px 8px",
+                      padding: "8px 12px",
                       borderRadius: "6px",
                       border: "1px solid #d1d5db",
+                      fontSize: "14px",
+                      transition: "border-color 0.2s",
+                      outline: "none",
                     }}
                   />
+                  
+                  {/* Suggestions Dropdown */}
+                  {showCounterpartySuggestions && (
+                    <div style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      background: "white",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "6px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      zIndex: 50,
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                    }}>
+                      {filteredCounterparties.map(cp => (
+                        <div
+                          key={cp.id}
+                          onClick={() => {
+                            setPlannedForm((f) => ({
+                              ...f,
+                              counterparty: cp.name,
+                              counterparty_id: cp.id,
+                            }));
+                            setShowCounterpartySuggestions(false);
+                          }}
+                          style={{
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            borderBottom: "1px solid #f3f4f6",
+                            fontSize: "14px",
+                            transition: "background-color 0.15s",
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = "#f9fafb"}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = "white"}
+                        >
+                          <div style={{ fontWeight: "500", color: "#111827" }}>
+                            {cp.name}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                            {cp.type === 'CUSTOMER' ? '👤 Müşteri' : cp.type === 'SUPPLIER' ? '🏢 Tedarikçi' : '📋 Diğer'}
+                            {cp.vkn && ` • VKN: ${cp.vkn}`}
+                          </div>
+                        </div>
+                      ))}
+                      {filteredCounterparties.length === 0 && (
+                        <div style={{
+                          padding: "12px",
+                          textAlign: "center",
+                          color: "#6b7280",
+                          fontSize: "13px",
+                        }}>
+                          🔍 Eşleşen cari bulunamadı
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label style={{ fontSize: "var(--font-size-body)", display: "block", marginBottom: "4px" }}>

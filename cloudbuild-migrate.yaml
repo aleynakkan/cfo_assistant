@@ -22,26 +22,29 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['run', '--network=cloudbuild', 'busybox', 'sh', '-c', 'sleep 5']
 
-# 4) Run migrations via proxy
+# 4) Fetch DB password from Secret Manager into a file
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - 'gcloud secrets versions access latest --secret=db-password --project=cfoseyfo-test > /workspace/dbpass.txt'
+
+# 5) Run migrations (reads password from mounted file)
 - name: 'gcr.io/cloud-builders/docker'
   args:
     - 'run'
     - '--network=cloudbuild'
+    - '-v'
+    - '/workspace:/workspace'
     - '-e'
-    - 'DATABASE_URL=postgresql://postgres:$$DB_PASSWORD@cloudsql-proxy:5432/postgres'
+    - 'DB_HOST=cloudsql-proxy'
     - '-e'
     - 'ENV=production'
     - 'gcr.io/cfoseyfo-test/migration-job'
-  secretEnv: ['DB_PASSWORD']
 
-# 5) Stop proxy
+# 6) Stop proxy
 - name: 'gcr.io/cloud-builders/docker'
   args: ['stop', 'cloudsql-proxy']
-
-availableSecrets:
-  secretManager:
-  - versionName: projects/cfoseyfo-test/secrets/db-password/versions/latest
-    env: 'DB_PASSWORD'
 
 options:
   logging: CLOUD_LOGGING_ONLY

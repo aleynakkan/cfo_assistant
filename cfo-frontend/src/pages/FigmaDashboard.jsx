@@ -228,13 +228,16 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
       setMatchSubmitting(true);
       setMatchMessage("");
 
-      const res = await apiClient.withAuth(token).post('/matches', {
+      const token = localStorage.getItem("auth_token");
+      
+      const payload = {
         planned_item_id: activePlanned.id,
         transaction_id: selectedTx.transaction_id,
         matched_amount: Number(matchAmount),
         match_type: "MANUAL",
-      });
+      };
 
+      const res = await apiClient.withAuth(token).post('/matches', payload);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Eşleştirme başarısız");
 

@@ -8,7 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run all migrations in order:
-# 1. create_tables  - creates any new tables (counterparties, counterparty_aliases, etc.)
-# 2. migrate_counterparty - counterparty tables + FK columns + backfill
-# 3. migrate_vkn - adds vkn column + unique constraint
-CMD ["sh", "-c", "python create_tables.py && ENV=production python migrate_counterparty.py && ENV=production python migrate_vkn.py"]
+# 1. Read DB password from mounted file, build DATABASE_URL
+# 2. create_tables  - creates any new tables (counterparties, counterparty_aliases, etc.)
+# 3. migrate_counterparty - counterparty tables + FK columns + backfill
+# 4. migrate_vkn - adds vkn column + unique constraint
+CMD ["sh", "-c", "export DATABASE_URL=postgresql://postgres:$(cat /workspace/dbpass.txt)@${DB_HOST:-localhost}:5432/postgres && python create_tables.py && python migrate_counterparty.py && python migrate_vkn.py"]

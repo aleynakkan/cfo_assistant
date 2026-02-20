@@ -562,10 +562,6 @@ async def upload_enpara_excel(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Excel okunamadı: {str(e)}")
 
-    print(f"\n=== ENPARA EXCEL DEBUG ===")
-    print(f"Total rows: {len(df)}, Total columns: {len(df.columns)}")
-    print(f"=========================\n")
-
     # Enpara: başlık satırını otomatik bul (Tarih | Hareket tipi | Açıklama | İşlem Tutarı | Bakiye)
     header_row = None
     for potential_row_idx in range(min(20, len(df))):
