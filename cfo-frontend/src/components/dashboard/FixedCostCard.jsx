@@ -212,6 +212,7 @@ export default function FixedCostCard({ data, token }) {
         color: categoryColors[item.category] || '#dc0005',
         category: item.category,
       }))
+      .filter(item => item.amount > 0) // 0 TL tutarlı kategorileri gösterme
       .sort((a, b) => b.amount - a.amount) // Büyükten küçüğe sırala
     : [];
 
