@@ -17,6 +17,7 @@ from app.models import email_alias  # noqa
 from app.models import email_ingest_log  # noqa
 from app.models import email_attachment  # noqa
 from app.models import counterparty  # noqa
+from app.models import parasut_integration  # noqa
 from app.routes.transactions import router as transactions_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes import planned as planned_routes
@@ -26,6 +27,7 @@ from app.routes.company_settings import router as company_settings_router
 from app.routes.matches import router as matches_router
 from app.routes.email_ingestion import router as email_ingestion_router
 from app.routes.counterparties import router as counterparties_router
+from app.routes.parasut import router as parasut_router
 
 app = FastAPI(title="CFO Assistant API", redirect_slashes=False)
 
@@ -112,4 +114,9 @@ app.include_router(
     counterparties_router,
     prefix="/counterparties",
     tags=["counterparties"]
+)
+
+app.include_router(
+    parasut_router,
+    tags=["parasut"]
 )

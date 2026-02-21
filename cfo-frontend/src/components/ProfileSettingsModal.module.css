@@ -190,3 +190,149 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Paraşüt Entegrasyon Stilleri */
+.integrationHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.integrationLogo {
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f9ff;
+  border-radius: var(--radius-sm);
+}
+
+.integrationTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.integrationDesc {
+  margin: 2px 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.integrationLoading {
+  text-align: center;
+  padding: var(--space-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.connectedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-md);
+}
+
+.connectedDot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.connectedInfo {
+  background: #f9fafb;
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.infoRow + .infoRow {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+.infoLabel {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.infoValue {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.connectButton,
+.disconnectButton {
+  width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.connectButton {
+  background: #2563eb;
+  color: white;
+}
+
+.connectButton:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.connectButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.disconnectButton {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.disconnectButton:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.disconnectButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hint {
+  margin: 4px 0 0;
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: var(--space-md) 0;
+}

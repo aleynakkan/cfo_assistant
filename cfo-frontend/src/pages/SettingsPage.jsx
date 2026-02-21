@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
-import styles from './ProfileSettingsModal.module.css';
+import styles from './SettingsPage.module.css';
 
-export default function ProfileSettingsModal({ isOpen, onClose, currentName, onNameChange, token, onInitialBalanceSuccess, onError }) {
+export default function SettingsPage({ currentName, onNameChange, token, onInitialBalanceSuccess, onError, onBack }) {
+  const [activeSection, setActiveSection] = useState('profile');
+  
+  // Profile state
   const [name, setName] = useState(currentName || 'Kevin');
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'balance' | 'integrations'
   const [message, setMessage] = useState('');
+
+  // Balance state
   const [initialBalance, setInitialBalance] = useState('');
   const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [balanceMessage, setBalanceMessage] = useState('');
@@ -17,7 +21,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
   const [parasutEmail, setParasutEmail] = useState('');
   const [parasutPassword, setParasutPassword] = useState('');
   const [parasutCompanyId, setParasutCompanyId] = useState('');
-  const [parasutStatus, setParasutStatus] = useState(null); // { is_connected, parasut_email, parasut_company_id }
+  const [parasutStatus, setParasutStatus] = useState(null);
   const [parasutLoading, setParasutLoading] = useState(false);
   const [parasutMessage, setParasutMessage] = useState('');
   const [parasutStatusLoading, setParasutStatusLoading] = useState(false);
@@ -26,12 +30,12 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
     setName(currentName || 'Kevin');
   }, [currentName]);
 
-  // Paraşüt bağlantı durumunu kontrol et (tab açıldığında)
+  // Paraşüt bağlantı durumunu kontrol et
   useEffect(() => {
-    if (isOpen && activeTab === 'integrations') {
+    if (activeSection === 'integrations') {
       fetchParasutStatus();
     }
-  }, [isOpen, activeTab]);
+  }, [activeSection]);
 
   const fetchParasutStatus = async () => {
     setParasutStatusLoading(true);
@@ -43,7 +47,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
         setParasutStatus(data);
       }
     } catch {
-      // Bağlantı sorunu - bağlı değil varsay
       setParasutStatus({ is_connected: false });
     } finally {
       setParasutStatusLoading(false);
@@ -73,7 +76,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
         const data = await response.json();
         setParasutStatus(data);
         setParasutMessage('Paraşüt hesabı başarıyla bağlandı!');
-        setParasutPassword(''); // Şifreyi temizle
+        setParasutPassword('');
       } else {
         const error = await response.json().catch(() => ({}));
         setParasutMessage(error.detail || 'Bağlantı başarısız');
@@ -115,8 +118,8 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
     }
 
     onNameChange?.(name);
-    setMessage('');
-    onClose?.();
+    setMessage('Profil başarıyla güncellendi!');
+    setTimeout(() => setMessage(''), 3000);
   };
 
   const handleSaveBalance = async () => {
@@ -137,9 +140,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
       });
       setBalanceMessage('Başlangıç bakiyesi başarıyla kaydedildi!');
       onInitialBalanceSuccess?.();
-      setTimeout(() => {
-        onClose?.();
-      }, 1500);
     } catch (error) {
       setBalanceMessage('Hata: ' + error.message);
       onError?.(error.message);
@@ -148,47 +148,48 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
     }
   };
 
-  if (!isOpen) return null;
+  const sections = [
+    { id: 'profile', label: 'Profil', icon: '👤' },
+    { id: 'balance', label: 'Başlangıç Bakiyesi', icon: '💰' },
+    { id: 'integrations', label: 'Entegrasyonlar', icon: '🔗' },
+  ];
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.header}>
-          <h2>Ayarlar</h2>
-          <button 
-            className={styles.closeButton}
-            onClick={onClose}
-          >
-            ✕
+    <div className={styles.container}>
+      {/* Sidebar */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebarHeader}>
+          <button className={styles.backButton} onClick={onBack}>
+            ← Geri
           </button>
+          <h2 className={styles.sidebarTitle}>Ayarlar</h2>
         </div>
 
-        {/* Tabs */}
-        <div className={styles.tabs}>
-          <button 
-            className={`${styles.tab} ${activeTab === 'profile' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            👤 Profil
-          </button>
-          <button 
-            className={`${styles.tab} ${activeTab === 'balance' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('balance')}
-          >
-            💰 Başlangıç Bakiyesi
-          </button>
-          <button 
-            className={`${styles.tab} ${activeTab === 'integrations' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('integrations')}
-          >
-            🔗 Entegrasyonlar
-          </button>
-        </div>
+        <nav className={styles.sidebarNav}>
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              className={`${styles.navItem} ${activeSection === section.id ? styles.navItemActive : ''}`}
+              onClick={() => setActiveSection(section.id)}
+            >
+              <span className={styles.navIcon}>{section.icon}</span>
+              <span className={styles.navLabel}>{section.label}</span>
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-        <div className={styles.body}>
-          {/* Profile Tab */}
-          {activeTab === 'profile' && (
-            <div>
+      {/* Content Area */}
+      <main className={styles.content}>
+        {/* Profile Section */}
+        {activeSection === 'profile' && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Profil Bilgileri</h2>
+              <p className={styles.sectionDesc}>Hesap bilgilerinizi yönetin</p>
+            </div>
+
+            <div className={styles.card}>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Adınız</label>
                 <input
@@ -201,16 +202,35 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
               </div>
 
               {message && (
-                <div className={styles.message} style={{ color: '#dc2626' }}>
+                <div
+                  className={styles.message}
+                  style={{
+                    color: message.includes('başarıyla') ? '#065f46' : '#dc2626',
+                    backgroundColor: message.includes('başarıyla') ? '#d1fae5' : '#fee2e2',
+                  }}
+                >
                   {message}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Balance Tab */}
-          {activeTab === 'balance' && (
-            <div>
+              <div className={styles.cardActions}>
+                <button className={styles.saveButton} onClick={handleSaveName}>
+                  Kaydet
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Balance Section */}
+        {activeSection === 'balance' && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Başlangıç Bakiyesi</h2>
+              <p className={styles.sectionDesc}>Şirketinizin başlangıç bakiyesini ayarlayın</p>
+            </div>
+
+            <div className={styles.card}>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Başlangıç Bakiyesi (TL)</label>
                 <input
@@ -234,27 +254,52 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
               </div>
 
               {balanceMessage && (
-                <div 
+                <div
                   className={styles.message}
-                  style={{ 
-                    color: balanceMessage.includes('başarıyla') ? '#10b981' : '#dc2626'
+                  style={{
+                    color: balanceMessage.includes('başarıyla') ? '#065f46' : '#dc2626',
+                    backgroundColor: balanceMessage.includes('başarıyla') ? '#d1fae5' : '#fee2e2',
                   }}
                 >
                   {balanceMessage}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Integrations Tab - Paraşüt */}
-          {activeTab === 'integrations' && (
-            <div>
+              <div className={styles.cardActions}>
+                <button
+                  className={styles.saveButton}
+                  onClick={handleSaveBalance}
+                  disabled={balanceLoading}
+                >
+                  {balanceLoading ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Integrations Section */}
+        {activeSection === 'integrations' && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Entegrasyonlar</h2>
+              <p className={styles.sectionDesc}>Harici servisleri bağlayarak verilerinizi senkronize edin</p>
+            </div>
+
+            {/* Paraşüt Card */}
+            <div className={styles.card}>
               <div className={styles.integrationHeader}>
                 <span className={styles.integrationLogo}>☁️</span>
                 <div>
                   <h3 className={styles.integrationTitle}>Paraşüt</h3>
                   <p className={styles.integrationDesc}>Muhasebe yazılımınızdan fatura verilerini çekin</p>
                 </div>
+                {parasutStatus?.is_connected && (
+                  <span className={styles.connectedBadge}>
+                    <span className={styles.connectedDot}></span>
+                    Bağlı
+                  </span>
+                )}
               </div>
 
               {parasutStatusLoading ? (
@@ -262,11 +307,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
               ) : parasutStatus?.is_connected ? (
                 /* Bağlı durumda */
                 <div>
-                  <div className={styles.connectedBadge}>
-                    <span className={styles.connectedDot}></span>
-                    Bağlı
-                  </div>
-
                   <div className={styles.connectedInfo}>
                     <div className={styles.infoRow}>
                       <span className={styles.infoLabel}>E-posta:</span>
@@ -289,54 +329,58 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
               ) : (
                 /* Bağlı değil - form göster */
                 <div>
-                  <p className={styles.hint} style={{ marginBottom: '12px' }}>
+                  <p className={styles.hint} style={{ marginBottom: '16px' }}>
                     Paraşüt API bilgilerinizi almak için Paraşüt destek ekibine başvurun: <strong>destek@parasut.com</strong>
                   </p>
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Client ID</label>
-                    <input
-                      type="text"
-                      className={styles.input}
-                      value={parasutClientId}
-                      onChange={(e) => setParasutClientId(e.target.value)}
-                      placeholder="Paraşüt API Client ID"
-                    />
-                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Client ID</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        value={parasutClientId}
+                        onChange={(e) => setParasutClientId(e.target.value)}
+                        placeholder="Paraşüt API Client ID"
+                      />
+                    </div>
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Client Secret</label>
-                    <input
-                      type="password"
-                      className={styles.input}
-                      value={parasutClientSecret}
-                      onChange={(e) => setParasutClientSecret(e.target.value)}
-                      placeholder="Paraşüt API Client Secret"
-                    />
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Client Secret</label>
+                      <input
+                        type="password"
+                        className={styles.input}
+                        value={parasutClientSecret}
+                        onChange={(e) => setParasutClientSecret(e.target.value)}
+                        placeholder="Paraşüt API Client Secret"
+                      />
+                    </div>
                   </div>
 
                   <hr className={styles.divider} />
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Paraşüt E-posta</label>
-                    <input
-                      type="email"
-                      className={styles.input}
-                      value={parasutEmail}
-                      onChange={(e) => setParasutEmail(e.target.value)}
-                      placeholder="ornek@sirket.com"
-                    />
-                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Paraşüt E-posta</label>
+                      <input
+                        type="email"
+                        className={styles.input}
+                        value={parasutEmail}
+                        onChange={(e) => setParasutEmail(e.target.value)}
+                        placeholder="ornek@sirket.com"
+                      />
+                    </div>
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Paraşüt Şifre</label>
-                    <input
-                      type="password"
-                      className={styles.input}
-                      value={parasutPassword}
-                      onChange={(e) => setParasutPassword(e.target.value)}
-                      placeholder="Paraşüt şifreniz"
-                    />
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Paraşüt Şifre</label>
+                      <input
+                        type="password"
+                        className={styles.input}
+                        value={parasutPassword}
+                        onChange={(e) => setParasutPassword(e.target.value)}
+                        placeholder="Paraşüt şifreniz"
+                      />
+                    </div>
                   </div>
 
                   <div className={styles.formGroup}>
@@ -347,6 +391,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
                       value={parasutCompanyId}
                       onChange={(e) => setParasutCompanyId(e.target.value)}
                       placeholder="Paraşüt firma numaranız (ör: 12345)"
+                      style={{ maxWidth: '300px' }}
                     />
                     <p className={styles.hint}>
                       Paraşüt panelinizdeki URL'den bulabilirsiniz: app.parasut.com/<strong>FIRMA_NO</strong>/...
@@ -364,39 +409,32 @@ export default function ProfileSettingsModal({ isOpen, onClose, currentName, onN
               )}
 
               {parasutMessage && (
-                <div 
+                <div
                   className={styles.message}
-                  style={{ 
-                    color: parasutMessage.includes('başarıyla') ? '#10b981' : '#dc2626',
+                  style={{
+                    color: parasutMessage.includes('başarıyla') ? '#065f46' : '#dc2626',
                     backgroundColor: parasutMessage.includes('başarıyla') ? '#d1fae5' : '#fee2e2',
-                    marginTop: '12px'
+                    marginTop: '16px',
                   }}
                 >
                   {parasutMessage}
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        <div className={styles.footer}>
-          <button 
-            className={styles.cancelButton}
-            onClick={onClose}
-          >
-            {activeTab === 'integrations' ? 'Kapat' : 'İptal'}
-          </button>
-          {activeTab !== 'integrations' && (
-            <button 
-              className={styles.saveButton}
-              onClick={activeTab === 'profile' ? handleSaveName : handleSaveBalance}
-              disabled={balanceLoading}
-            >
-              {balanceLoading ? 'Kaydediliyor...' : 'Kaydet'}
-            </button>
-          )}
-        </div>
-      </div>
+            {/* Placeholder for future integrations */}
+            <div className={`${styles.card} ${styles.cardMuted}`}>
+              <div className={styles.integrationHeader}>
+                <span className={styles.integrationLogo} style={{ background: '#f3f4f6' }}>📦</span>
+                <div>
+                  <h3 className={styles.integrationTitle} style={{ color: 'var(--text-secondary)' }}>Daha fazlası yakında...</h3>
+                  <p className={styles.integrationDesc}>Yeni entegrasyonlar üzerinde çalışıyoruz</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

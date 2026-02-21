@@ -18,7 +18,7 @@ steps:
     - '--allow-unauthenticated'
     - '--set-cloudsql-instances=cfoseyfo-test:us-central1:cfoseyfodbqa'
     - '--update-env-vars=ENV=production'
-    - '--update-secrets=DATABASE_URL=db-connection-string:latest'
+    - '--update-secrets=DATABASE_URL=db-connection-string:latest,SMTP_HOST=SMTP_HOST:latest,SMTP_PORT=SMTP_PORT:latest,SMTP_USER=SMTP_USER:latest,SMTP_PASSWORD=SMTP_PASSWORD:latest,FRONTEND_URL=FRONTEND_URL:latest'
 
 # Frontend için Docker image build ve deploy
 - name: 'gcr.io/cloud-builders/docker'

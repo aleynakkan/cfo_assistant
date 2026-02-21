@@ -1,5 +1,8 @@
 # app/routes/auth.py
 
+from datetime import datetime, timedelta
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -8,6 +11,7 @@ from app.core.deps import get_db
 from app.models.user import User
 from app.models.company import Company
 from app.core.security import verify_password, hash_password, create_access_token
+from app.core.email import send_password_reset_email
 from app.schemas.auth import Token, LoginRequest
 
 
@@ -97,19 +101,70 @@ def forgot_password(
     db: Session = Depends(get_db)
 ):
     """
-    Parola sıfırlama işlemi - MVP versiyonunda sadece başarılı response dön.
-    Gerçek implementasyonda email gönderimi ve reset token oluşturması olacak.
+    Parola sıfırlama - reset token oluştur ve email ile gönder.
+    Güvenlik: Email var/yok ayrımı yapılmaz.
     """
-    # Email'in sistemde olup olmadığını kontrol et
+    # Aynı mesajı her durumda dön (email enumeration koruması)
+    success_msg = "Eğer bu email adresi sistemde kayıtlıysa, parola sıfırlama bağlantısı gönderilmiştir."
+
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        # Security: Mevcut olmayan email için de başarılı response dön
-        # Bu sayede email adresi tahmin edilemez
-        return {"message": "Eğer bu email adresi sistemde kayıtlıysa, parola sıfırlama bağlantısı gönderilmiştir."}
-    
-    # TODO: Gerçek implementasyon:
-    # 1. Reset token oluştur ve database'e kaydet
-    # 2. Email service ile reset link gönder
-    # 3. Token expiry time ayarla
-    
-    return {"message": "Eğer bu email adresi sistemde kayıtlıysa, parola sıfırlama bağlantısı gönderilmiştir."}
+        return {"message": success_msg}
+
+    # Güvenli rastgele token oluştur
+    reset_token = secrets.token_urlsafe(32)
+    user.reset_token = reset_token
+    user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+    db.commit()
+
+    # Email gönder
+    email_sent = send_password_reset_email(to_email=email, reset_token=reset_token)
+
+    if not email_sent:
+        # SMTP çalışmıyorsa token'ı doğrudan dön (development modu)
+        import os
+        if os.getenv("ENV", "local") != "production":
+            return {
+                "message": success_msg,
+                "dev_reset_token": reset_token,
+                "dev_note": "SMTP ayarları eksik. Bu token sadece development ortamında gösterilir."
+            }
+
+    return {"message": success_msg}
+
+
+@router.post("/reset-password")
+def reset_password(
+    token: str = Form(...),
+    new_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Reset token ile yeni parola belirleme.
+    """
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token ve yeni şifre gereklidir")
+
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır")
+
+    # Token ile kullanıcıyı bul
+    user = db.query(User).filter(User.reset_token == token).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Geçersiz veya süresi dolmuş sıfırlama bağlantısı")
+
+    # Token süresini kontrol et
+    if user.reset_token_expires is None or user.reset_token_expires < datetime.utcnow():
+        # Süresi dolmuş token'ı temizle
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.commit()
+        raise HTTPException(status_code=400, detail="Sıfırlama bağlantısının süresi dolmuş. Lütfen tekrar deneyin.")
+
+    # Şifreyi güncelle ve token'ı temizle
+    user.hashed_password = hash_password(new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    db.commit()
+
+    return {"message": "Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz."}

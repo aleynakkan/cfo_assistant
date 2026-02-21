@@ -112,6 +112,14 @@ export const API_ENDPOINTS = {
 
   // AI
   AI_QUERY: '/ai/query',
+
+  // Paraşüt Entegrasyon
+  PARASUT_STATUS: '/parasut/status',
+  PARASUT_CONNECT: '/parasut/connect',
+  PARASUT_DISCONNECT: '/parasut/disconnect',
+  PARASUT_SALES_INVOICES: '/parasut/sales-invoices',
+  PARASUT_PURCHASE_BILLS: '/parasut/purchase-bills',
+  PARASUT_CONTACTS: '/parasut/contacts',
 };
 
 export const API_BASE_URL = API_BASE;

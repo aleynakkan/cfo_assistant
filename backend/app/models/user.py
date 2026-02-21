@@ -1,6 +1,6 @@
 # app/models/user.py
 
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from app.core.database import Base
 
 
@@ -11,3 +11,5 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    reset_token = Column(String, nullable=True, index=True)
+    reset_token_expires = Column(DateTime, nullable=True)

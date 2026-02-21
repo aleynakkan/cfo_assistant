@@ -4,7 +4,7 @@ import FigmaDashboard from "./pages/FigmaDashboard";
 import LoginView from "./pages/LoginView";
 import Navbar from "./components/Navbar";
 import InitialBalanceModal from "./components/InitialBalanceModal";
-import ProfileSettingsModal from "./components/ProfileSettingsModal";
+import SettingsPage from "./pages/SettingsPage";
 import AiChatPanel from "./components/AiChatPanel";
 import CounterpartyView from "./pages/CounterpartyView";
 import ErrorToast from "./components/ErrorToast";
@@ -77,7 +77,7 @@ function App() {
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("user_name") || "Kevin";
   });
-  const [showProfileSettingsModal, setShowProfileSettingsModal] = useState(false);
+
 
   // AI Chat Panel state (global floating panel)
   const [aiChatPanelOpen, setAiChatPanelOpen] = useState(false);
@@ -442,7 +442,7 @@ function App() {
             setView={setView} 
             onLogout={handleLogout}
             onInitialBalance={() => setShowInitialBalanceModal(true)}
-            onProfileSettings={() => setShowProfileSettingsModal(true)}
+            onProfileSettings={() => setView('settings')}
             onAiChatToggle={() => setAiChatPanelOpen(!aiChatPanelOpen)}
             userName={userName}
           />
@@ -487,44 +487,46 @@ function App() {
         </div>
       )}
 
-      <main style={{ padding: "18px", width: "100%", paddingTop: "82px", boxSizing: "border-box" }}>
-        {view === "dashboard" ? (
-          <FigmaDashboard
-            summary={summary}
-            cashPosition={cashPosition}
-            matchHealth={matchHealth}
-            fixedCosts={fixedCosts}
-            insights={insights}
-            userName={userName}
+      {view === "settings" ? (
+        <div style={{ paddingTop: "64px", width: "100%", minHeight: "100vh", boxSizing: "border-box" }}>
+          <SettingsPage
+            currentName={userName}
+            onNameChange={(newName) => {
+              setUserName(newName);
+              localStorage.setItem("user_name", newName);
+            }}
             token={token}
-            onRefreshDashboard={loadData}
+            onInitialBalanceSuccess={() => loadData(undefined, token)}
+            onError={showError}
+            onBack={() => setView('dashboard')}
           />
-        ) : view === "counterparties" ? (
-          <CounterpartyView token={token} />
-        ) : (
-          <DataManagementView
-            transactions={transactions}
-            loading={loading}
-            error={error}
-            onDataChanged={loadData}
-            token={token}
-          />
-        )}
-      </main>
-
-      {/* Profil Ayarlari Modal (Profil + Baslangi� Bakiyesi) */}
-      <ProfileSettingsModal
-        isOpen={showProfileSettingsModal}
-        onClose={() => setShowProfileSettingsModal(false)}
-        currentName={userName}
-        onNameChange={(newName) => {
-          setUserName(newName);
-          localStorage.setItem("user_name", newName);
-        }}
-        token={token}
-        onInitialBalanceSuccess={() => loadData(undefined, token)}
-        onError={showError}
-      />
+        </div>
+      ) : (
+        <main style={{ padding: "18px", width: "100%", paddingTop: "82px", boxSizing: "border-box" }}>
+          {view === "dashboard" ? (
+            <FigmaDashboard
+              summary={summary}
+              cashPosition={cashPosition}
+              matchHealth={matchHealth}
+              fixedCosts={fixedCosts}
+              insights={insights}
+              userName={userName}
+              token={token}
+              onRefreshDashboard={loadData}
+            />
+          ) : view === "counterparties" ? (
+            <CounterpartyView token={token} />
+          ) : (
+            <DataManagementView
+              transactions={transactions}
+              loading={loading}
+              error={error}
+              onDataChanged={loadData}
+              token={token}
+            />
+          )}
+        </main>
+      )}
 
       {/* Global Floating AI Chat Panel */}
       {aiChatPanelOpen && (
