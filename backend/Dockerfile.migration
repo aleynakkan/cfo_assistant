@@ -1,0 +1,18 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy migration script and necessary modules
+COPY counterparty_migration.py .
+COPY app/models/ ./app/models/
+COPY app/core/ ./app/core/
+COPY app/__init__.py ./app/
+COPY app/models/__init__.py ./app/models/
+COPY app/core/__init__.py ./app/core/
+
+# Run the migration
+CMD ["python", "counterparty_migration.py"]

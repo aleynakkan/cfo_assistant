@@ -18,16 +18,12 @@ class LoginFormData(BaseModel):
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/test-login-debug")
-def test_login_debug(
-    email: str = Form(...),
-    password: str = Form(...),
-):
-    """Debug endpoint - form alıyor mu?"""
+@router.get("/health")
+def health_check():
+    """API sağlık kontrolü - database bağlantısı olmadan"""
     return {
-        "email_received": email,
-        "password_received": password,
-        "status": "form received successfully"
+        "status": "API is running",
+        "timestamp": "2026-02-21"
     }
 
 
