@@ -66,7 +66,7 @@ export default function Navbar({ view, setView, onLogout, onInitialBalance, onPr
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
             <div className={styles.avatar}>{userInitial}</div>
-            <span className={styles.profileName}>{userName}</span>
+            <span className={styles.profileLabel}>Profil</span>             
             <span className={styles.profileDropdown}>▼</span>
           </div>
           

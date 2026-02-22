@@ -48,7 +48,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
   const netCash = summary?.net_cashflow || 0;
 
   const hour = new Date().getHours();
-  let greeting = "Günaydınn";
+  let greeting = "Günaydın";
   if (hour >= 12 && hour < 18) greeting = "İyi öğlenler";
   if (hour >= 18) greeting = "İyi akşamlar";
 
@@ -298,7 +298,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
     <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
         {/* Header: Greeting + Date Filter */}
         <div className={styles.header}>
-          <h1 className={styles.greeting}>{greeting}, {userName}! 👋</h1>
+         {/*<h1 className={styles.greeting}>{greeting}, {userName}! 👋</h1>*/}
           <select 
             id="date-filter"
             name="dateFilter"
