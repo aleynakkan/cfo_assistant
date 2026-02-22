@@ -16,15 +16,15 @@ def validate_vkn(vkn: Optional[str]) -> Optional[str]:
     if not re.match(r"^\d{10}$", vkn):
         raise ValueError("VKN must be exactly 10 digits")
     # Optional: Turkish VKN checksum algorithm
-    digits = [int(d) for d in vkn]
-    total = 0
-    for i in range(9):
+    #digits = [int(d) for d in vkn]
+    #total = 0
+    #for i in range(9):
         tmp = (digits[i] + (9 - i)) % 10
         total += (tmp * (2 ** (9 - i))) % 9
         if tmp == 0 and (9 - i) != 1:
             total += 9
-    check = (10 - (total % 10)) % 10
-    if check != digits[9]:
+    #check = (10 - (total % 10)) % 10
+    #if check != digits[9]:
         raise ValueError("VKN checksum is invalid")
     return vkn
 
