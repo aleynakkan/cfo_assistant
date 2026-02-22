@@ -76,6 +76,35 @@ function renderMetric(insight) {
           ))}
         </ul>
       );
+    case "risk_collection_exposure":
+      const exposurePct = m.exposure_pct ?? 0;
+      const highRiskAmt = m.high_risk_amount ?? 0;
+      const totalUpcoming = m.total_upcoming ?? 0;
+      const riskCps = Array.isArray(m.high_risk_counterparties) ? m.high_risk_counterparties : [];
+      return (
+        <div className={styles.metricArea}>
+          <div className={styles.metricRow}>
+            <span className={exposurePct >= 40 ? styles.metricBadgeRed : styles.metricBadgeOrange}>
+              Maruziyet: %{fmt(exposurePct, 0, 0)}
+            </span>
+            <span className={styles.metricBadgeRed}>
+              Riskli: {fmt(highRiskAmt)} TL
+            </span>
+            <span className={styles.metricBadgeGreen}>
+              Toplam: {fmt(totalUpcoming)} TL
+            </span>
+          </div>
+          {riskCps.length > 0 && (
+            <ul className={styles.metricList}>
+              {riskCps.map((cp, idx) => (
+                <li key={idx}>
+                  {cp.name}: {fmt(cp.amount)} TL (risk: {fmt(cp.risk_score, 0, 0)})
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
     default:
       return null;
   }

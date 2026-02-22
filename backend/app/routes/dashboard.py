@@ -16,6 +16,8 @@ from app.models.transaction import Transaction
 from app.models.company import Company
 from app.models.planned_item import PlannedCashflowItem
 from app.models.planned_match import PlannedMatch
+from app.models.counterparty import Counterparty
+from app.services.counterparty_service import compute_counterparty_metrics
 
 
 # Helper function to format date for grouping - works with both SQLite and PostgreSQL
@@ -1074,10 +1076,99 @@ def get_insights(
                 }
             })
 
+    # 6) RİSK AĞIRLIKLI TAHSİLAT MARUZİYETİ (önümüzdeki 30 gün)
+    try:
+        end_30d = today + timedelta(days=30)
+
+        # Önümüzdeki 30 gün içindeki aktif tahsilat kalemleri (direction=in)
+        upcoming_in = db.query(
+            PlannedCashflowItem.counterparty_id,
+            func.coalesce(func.sum(PlannedCashflowItem.amount), 0).label("total")
+        ).filter(
+            PlannedCashflowItem.direction == "in",
+            PlannedCashflowItem.status.in_(["OPEN", "PARTIAL"]),
+            PlannedCashflowItem.due_date >= today,
+            PlannedCashflowItem.due_date <= end_30d,
+            PlannedCashflowItem.company_id == current_company.id,
+            PlannedCashflowItem.counterparty_id.isnot(None),
+        ).group_by(PlannedCashflowItem.counterparty_id).all()
+
+        print(f"[DEBUG] upcoming_in count: {len(upcoming_in)}, items: {[(cp_id, float(amt)) for cp_id, amt in upcoming_in]}")
+
+        if upcoming_in:
+            # Cari risk metriklerini hesapla
+            cp_metrics = compute_counterparty_metrics(db, current_company.id)
+            risk_map = {
+                m["counterparty_id"]: m["risk_score"]
+                for m in cp_metrics
+                if m["risk_score"] is not None
+            }
+            print(f"[DEBUG] risk_map: {risk_map}")
+
+            total_upcoming = 0.0
+            high_risk_amount = 0.0
+            high_risk_counterparties = []
+
+            for cp_id, amount in upcoming_in:
+                amt = float(amount or 0)
+                total_upcoming += amt
+                score = risk_map.get(cp_id)
+                print(f"[DEBUG] cp_id={cp_id}, amt={amt}, risk_score={score}")
+                # Yüksek risk eşiği: risk_score >= 60 (0-100 ölçeğinde)
+                if score is not None and score >= 60:
+                    high_risk_amount += amt
+                    # Cari adını bul
+                    cp = db.query(Counterparty.name).filter(
+                        Counterparty.id == cp_id
+                    ).scalar()
+                    high_risk_counterparties.append({
+                        "name": cp or "Bilinmeyen",
+                        "amount": round(amt, 2),
+                        "risk_score": score,
+                    })
+
+            if total_upcoming > 0:
+                exposure_pct = (high_risk_amount / total_upcoming) * 100
+
+                # %20 altında gösterme
+                if exposure_pct >= 20:
+                    severity = "critical" if exposure_pct >= 40 else "medium"
+                    insights.append({
+                        "id": "risk_collection_exposure",
+                        "severity": severity,
+                        "title": "Riskli Tahsilat",
+                        "message": (
+                            f"Önümüzdeki 30 gün içinde beklenen tahsilatların "
+                            f"%{exposure_pct:.0f}'i ({high_risk_amount:,.0f} TL) "
+                            f"yüksek riskli müşterilerden geliyor."
+                        ),
+                        "metric": {
+                            "exposure_pct": round(exposure_pct, 1),
+                            "high_risk_amount": round(high_risk_amount, 2),
+                            "total_upcoming": round(total_upcoming, 2),
+                            "high_risk_counterparties": sorted(
+                                high_risk_counterparties,
+                                key=lambda x: x["amount"],
+                                reverse=True
+                            )[:5],
+                        },
+                    })
+    except Exception as e:
+        # Insight hesaplanamadıysa diğer insight'ları etkilememesi için sessizce geç
+        import traceback
+        print(f"[INSIGHT] risk_collection_exposure hatası: {e}")
+        traceback.print_exc()
+
+    # risk_collection_exposure varsa ilk sıraya taşı
+    sorted_insights = sorted(
+        insights,
+        key=lambda x: 0 if x["id"] == "risk_collection_exposure" else 1
+    )
+
     return {
         "period": period,
         "generated_at": today.isoformat(),
-        "insights": insights,
+        "insights": sorted_insights,
         "debug": {
             "window_start": start.isoformat() if start else None,
             "window_end": end.isoformat() if end else None,

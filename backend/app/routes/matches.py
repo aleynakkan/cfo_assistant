@@ -171,7 +171,7 @@ def planned_match_suggestions(
         return {"planned_id": planned_id, "remaining_amount": remaining, "suggestions": []}
 
     window_start = item.due_date - timedelta(days=10)
-    window_end = item.due_date + timedelta(days=10)
+    window_end = item.due_date + timedelta(days=40)
 
     matched_tx_ids = db.query(PlannedMatch.transaction_id).filter(
         PlannedMatch.company_id == company_id
