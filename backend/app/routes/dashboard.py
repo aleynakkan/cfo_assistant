@@ -1065,16 +1065,16 @@ def get_insights(
                     "out": round(outv, 2),
                     "share": round(outv / float(total_out), 4)
                 })
-            insights.append({
-                "id": "top_expense_drivers",
-                "severity": "low",
-                "title": "En büyük gider sürükleyicileri",
-                "message": "Son 30 günde en çok gider çıkan kategoriler listelendi.",
-                "metric": {
-                    "total_out": round(float(total_out), 2),
-                    "items": items
-                }
-            })
+            # insights.append({
+            #   "id": "top_expense_drivers",
+            #    "severity": "low",
+            #    "title": "En büyük gider sürükleyicileri",
+            #    "message": "Son 30 günde en çok gider çıkan kategoriler listelendi.",
+            #    "metric": {
+            #        "total_out": round(float(total_out), 2),
+            #        "items": items
+            #    }
+            #})
 
     # 6) RİSK AĞIRLIKLI TAHSİLAT MARUZİYETİ (önümüzdeki 30 gün)
     try:
@@ -1157,6 +1157,107 @@ def get_insights(
         # Insight hesaplanamadıysa diğer insight'ları etkilememesi için sessizce geç
         import traceback
         print(f"[INSIGHT] risk_collection_exposure hatası: {e}")
+        traceback.print_exc()
+
+    # 7) TEDARİKÇİLERE ERKEN ÖDEME MALİYETİ
+    # Tedarikçilere (Counterparty.type="SUPPLIER") yapılan ve vade tarihinden önce
+    # gerçekleşen ödemelerin finansal fırsat maliyetini hesaplar.
+    try:
+        # İleride TCMB API entegrasyonu yapılacak; şimdilik sabit %30 yıllık basit faiz
+        annual_interest_rate = 0.30  # TODO: TCMB API'den dinamik çekilecek
+
+        start_30 = today - timedelta(days=30)
+        end_30 = today
+
+        # PlannedMatch → PlannedCashflowItem → Counterparty → Transaction join'i
+        # Sadece son 30 gün içinde gerçekleşen (Transaction.date) tedarikçi ödemeleri
+        early_matches = (
+            db.query(
+                PlannedMatch.matched_amount,
+                PlannedCashflowItem.due_date,
+                Transaction.date.label("payment_date"),
+                Counterparty.name.label("counterparty_name"),
+            )
+            .join(PlannedCashflowItem, PlannedMatch.planned_item_id == PlannedCashflowItem.id)
+            .join(Transaction, PlannedMatch.transaction_id == Transaction.id)
+            .join(Counterparty, PlannedCashflowItem.counterparty_id == Counterparty.id)
+            .filter(
+                PlannedMatch.company_id == current_company.id,
+                PlannedCashflowItem.direction == "out",
+                Counterparty.type == "SUPPLIER",
+                Transaction.date >= start_30,
+                Transaction.date <= end_30,
+            )
+            .all()
+        )
+
+        total_early_amount = 0.0
+        total_interest_loss = 0.0
+        early_days_list = []
+        early_payment_details = []
+
+        for matched_amount, due_date, payment_date, counterparty_name in early_matches:
+            # matched_amount: PlannedMatch içindeki eşleştirilen tutar alanını kullanıyoruz
+            early_days = (due_date - payment_date).days
+            if early_days <= 0:
+                # Zamanında veya geç ödeme; erken ödeme değil, atla
+                continue
+
+            amt = float(matched_amount or 0)
+            # Basit faiz: kayıp = tutar * yıllık_oran * erken_gün / 365
+            interest_loss = amt * annual_interest_rate * early_days / 365
+
+            total_early_amount += amt
+            total_interest_loss += interest_loss
+            early_days_list.append(early_days)
+            early_payment_details.append({
+                "counterparty_name": counterparty_name or "Bilinmeyen",
+                "payment_date": payment_date.isoformat(),
+                "due_date": due_date.isoformat(),
+                "amount": round(amt, 2),
+                "early_days": early_days,
+                "interest_loss": round(interest_loss, 2),
+            })
+
+        if total_early_amount > 0 and total_interest_loss > 0:
+            avg_early_days = sum(early_days_list) / len(early_days_list)
+
+            # En çok finansal kayıp yaratan ilk 5 erken ödeme
+            top_early_payments = sorted(
+                early_payment_details,
+                key=lambda x: x["interest_loss"],
+                reverse=True
+            )[:5]
+
+            if total_interest_loss >= 50_000:
+                severity = "critical"
+            elif total_interest_loss >= 10_000:
+                severity = "medium"
+            else:
+                severity = "low"
+
+            insights.append({
+                "id": "early_supplier_payments",
+                "severity": severity,
+                "title": "Tedarikçilere Erken Ödeme Maliyeti",
+                "message": (
+                    f"Son 30 günde tedarikçilere {total_early_amount:,.0f} TL erken ödeme yaptınız. "
+                    f"Bu erken ödemeler, yaklaşık {total_interest_loss:,.0f} TL tutarında "
+                    f"potansiyel faiz gelirinden vazgeçmenize neden oldu."
+                    # Alternatif: f"Son 30 günde yapılan {total_early_amount:,.0f} TL erken ödeme, "
+                    #             f"dolaylı olarak yaklaşık {total_interest_loss:,.0f} TL finansal kayba yol açtı."
+                ),
+                "metric": {
+                    "total_early_amount": round(total_early_amount, 2),
+                    "total_interest_loss": round(total_interest_loss, 2),
+                    "avg_early_days": round(avg_early_days, 1),
+                    "annual_interest_rate_used": annual_interest_rate,
+                    "top_early_payments": top_early_payments,
+                },
+            })
+    except Exception as e:
+        import traceback
+        print(f"[INSIGHT] early_supplier_payments hatası: {e}")
         traceback.print_exc()
 
     # risk_collection_exposure varsa ilk sıraya taşı
