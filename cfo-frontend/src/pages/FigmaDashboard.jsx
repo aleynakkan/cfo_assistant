@@ -6,6 +6,10 @@ import FixedCostCard from '../components/dashboard/FixedCostCard';
 import CashForecastCard from '../components/dashboard/CashForecastCard';
 import InsightCard from '../components/InsightCard';
 import useFocusTrap from '../hooks/useFocusTrap';
+import tahmininakitpoz_karticon from '../assets/tahmininakitpoz_karticon.svg';
+import artis_icon from '../assets/artis_icon.svg';
+import dusus_icon from '../assets/dusus_icon.svg';
+
 
 export default function FigmaDashboard({ summary, cashPosition, matchHealth, fixedCosts, insights, userName, token, onRefreshDashboard }) {
   const [selectedModal, setSelectedModal] = useState(null);
@@ -17,6 +21,8 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
   // Date filter state
   const [dateFilter, setDateFilter] = useState("Tüm zamanlar");
+  const [selectWidth, setSelectWidth] = useState(undefined);
+  const textMeasureRef = useState(null);
   const [filteredKpis, setFilteredKpis] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -188,6 +194,16 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
     fetchFilteredKpis(newFilter);
   }
 
+  // Responsive select width based on selected option
+  const selectOptions = ["Tüm zamanlar", "Son 30 gün", "Bu ay"];
+  const selectText = dateFilter;
+
+  useEffect(() => {
+    if (!textMeasureRef.current) return;
+    const width = textMeasureRef.current.offsetWidth;
+    setSelectWidth(width + 36); // 36px for padding, arrow, border
+  }, [dateFilter]);
+
   // Sayfa yüklenince veri çek
   useEffect(() => {
     fetchFilteredKpis("Tüm zamanlar");
@@ -299,12 +315,31 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
         {/* Header: Greeting + Date Filter */}
         <div className={styles.header}>
          {/*<h1 className={styles.greeting}>{greeting}, {userName}! 👋</h1>*/}
-          <select 
+          {/* Hidden span for measuring option width */}
+          <span
+            ref={textMeasureRef}
+            style={{
+              position: 'absolute',
+              visibility: 'hidden',
+              height: 0,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              fontSize: 'var(--font-size-lg)',
+              fontFamily: 'inherit',
+              fontWeight: 400,
+              padding: '8px 18px 8px 12px',
+              border: '1px solid #e5e7eb',
+            }}
+          >
+            {selectText}
+          </span>
+          <select
             id="date-filter"
             name="dateFilter"
             className={styles.filterSelect}
             value={dateFilter}
             onChange={handleDateFilterChange}
+            style={selectWidth ? { width: selectWidth } : {}}
           >
             <option>Tüm zamanlar</option>
             <option>Son 30 gün</option>
@@ -320,20 +355,42 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
           marginBottom: "12px"
         }}>
           {/* Red Hero Card: Tahmini Nakit */}
-          <div className={styles.heroCard}>
-            <div className={styles.heroLabel}>Tahmini Nakit Pozisyonu</div>
+          <div className={styles.heroCard} style={{ position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className={styles.heroLabel}>Tahmini Nakit Pozisyonu</div>
+              {cashPosition?.change_30_days_percent !== undefined && (
+                <div className={styles.heroChangeIndicator}>
+                  <span className={cashPosition.change_30_days_percent >= 0 ? styles.positive : styles.negative}>
+                    <img
+                      src={cashPosition.change_30_days_percent >= 0 ? artis_icon : dusus_icon}
+                      alt={cashPosition.change_30_days_percent >= 0 ? 'artış' : 'düşüş'}
+                      style={{ width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '2px', filter: 'brightness(0) invert(1)' }}
+                    />
+                    {Math.abs(cashPosition.change_30_days_percent).toFixed(1)}%
+                  </span>
+                  <span className={styles.changeLabel}>son 1 ay</span>
+                </div>
+              )}
+            </div>
             <div className={styles.heroValue}>
               {fmt(estimatedCash, 0, 2)}
               <span className={styles.heroCurrency}>TL</span>
             </div>
-            {cashPosition?.change_30_days_percent !== undefined && (
-              <div className={styles.heroChangeIndicator}>
-                <span className={cashPosition.change_30_days_percent >= 0 ? styles.positive : styles.negative}>
-                  {cashPosition.change_30_days_percent >= 0 ? '+' : '-'}{Math.abs(cashPosition.change_30_days_percent).toFixed(1)}%
-                </span>
-                <span className={styles.changeLabel}>son 1 ay</span>
-              </div>
-            )}
+            <img
+              src={tahmininakitpoz_karticon}
+              alt=""
+              style={{
+                position: 'absolute',
+                bottom: -30,
+                right: -30,
+                height: '80%',
+                width: 'auto',
+                opacity: 0.15,
+                filter: 'brightness(0)',
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}
+            />
           </div>
 
           {/* KPI Card 1: Toplam Gelir */}
@@ -638,7 +695,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
           {/* Önemli Bulgular */}
           {insights && insights.length > 0 && (
             <div className={styles.card} style={{ gridColumn: '1 / -1' }}>
-              <h2 className={styles.cardTitle} style={{ marginBottom: '20px' }}>⚡ Önemli Bulgular</h2>
+              <h2 className={styles.cardTitle} style={{ marginBottom: '20px' }}>Önemli Bulgular</h2>
               <div 
                 style={{
                   display: 'flex',

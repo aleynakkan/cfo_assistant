@@ -81,6 +81,16 @@
   font-size: var(--font-size-helptext);
 }
 
+.redButton img {
+  filter: brightness(0) invert(1);
+  transition: filter 0.2s ease;
+}
+
+.outlineButton img {
+  filter: brightness(0);
+  transition: filter 0.2s ease;
+}
+
 .outlineButton {
   display: flex;
   align-items: center;

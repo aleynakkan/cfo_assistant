@@ -167,6 +167,8 @@ function DonutSegment({ item, index, startRad, endRad, innerRadius, outerRadius,
 
 export default function FixedCostCard({ data, token }) {
   const [dateFilter, setDateFilter] = useState('current_month');
+  const [selectWidth, setSelectWidth] = useState(undefined);
+  const selectTextRef = useState(null);
   const [filteredData, setFilteredData] = useState(data || []);
   const [loading, setLoading] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(null);
@@ -240,18 +242,52 @@ export default function FixedCostCard({ data, token }) {
     return 'Sabit Gider Analizi';
   }, [dateFilter]);
 
+  // Responsive select width based on selected option
+  const selectOptions = {
+    current_month: 'Bu Ay',
+    last_30_days: 'Son 30 Gün',
+    prev_month: 'Önceki Ay',
+  };
+  const selectText = selectOptions[dateFilter] || '';
+  const textMeasureRef = useState(null);
+
+  useEffect(() => {
+    if (!textMeasureRef.current) return;
+    const width = textMeasureRef.current.offsetWidth;
+    setSelectWidth(width + 24); // 36px for padding, arrow, border
+  }, [dateFilter]);
+
   return (
     <div className={styles.card}>
       {/* Header with Title and Date Filter */}
       <div className={styles.header}>
         <h3 className={styles.cardTitle}>Sabit Gider Analizi</h3>
         <div className={styles.dateFilter}>
-          <select 
+          {/* Hidden span for measuring option width */}
+          <span
+            ref={textMeasureRef}
+            style={{
+              position: 'absolute',
+              visibility: 'hidden',
+              height: 0,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              fontSize: 'var(--font-size-helptext)',
+              fontFamily: 'inherit',
+              fontWeight: 400,
+              padding: '6px 10px',
+              border: '1px solid #e5e7eb',
+            }}
+          >
+            {selectText}
+          </span>
+          <select
             id="fixed-cost-date-filter"
             name="fixedCostDateFilter"
-            value={dateFilter} 
+            value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             className={styles.filterSelect}
+            style={selectWidth ? { width: selectWidth } : {}}
           >
             <option value="current_month">Bu Ay</option>
             <option value="last_30_days">Son 30 Gün</option>

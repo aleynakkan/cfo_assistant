@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import useFocusTrap from "../hooks/useFocusTrap";
 import styles from "./InsightCard.module.css";
-import warningIcon from "../assets/warning.svg";
+import warningIcon from "../assets/insights/warning.svg";
+import risklitahsilat_icon from "../assets/insights/risklitahsilat_icon.svg";
+import uyari_icon from "../assets/insights/uyari_icon.svg";
+import bilgi_icon from "../assets/insights/bilgi_icon.svg";
 
 // Telemetry stub (replace with actual implementation)
 function sendTelemetry(eventName, payload) {
@@ -112,10 +115,74 @@ function renderMetric(insight) {
 
 // Severity icon mapping
 const severityConfig = {
-  critical: { icon: "🔴", label: "Kritik", labelEn: "Critical" },
-  medium: { icon: <img src={warningIcon} alt="Warning" style={{ width: "20px", height: "20px" }} />, label: "Uyarı", labelEn: "Warning" },
-  info: { icon: "ℹ️", label: "Bilgi", labelEn: "Info" },
-  low: { icon: "📊", label: "Bilgi", labelEn: "Info" },
+    critical: {
+      icon: (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: '#fff',
+        }}>
+          <img src={risklitahsilat_icon} alt="Kritik" style={{ width: 32, height: 32 }} />
+        </span>
+      ),
+      label: "Kritik",
+      labelEn: "Critical"
+    },
+    medium: {
+      icon: (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: '#fff',
+        }}>
+          <img src={uyari_icon} alt="Uyarı" style={{ width: 32, height: 32 }} />
+        </span>
+      ),
+      label: "Uyarı",
+      labelEn: "Warning"
+    },
+    info: {
+      icon: (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: '#fff',
+        }}>
+          <img src={bilgi_icon} alt="Bilgi" style={{ width: 32, height: 32 }} />
+        </span>
+      ),
+      label: "Bilgi",
+      labelEn: "Info"
+    },
+    low: {
+      icon: (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: '#fff',
+        }}>
+          <img src={bilgi_icon} alt="Bilgi" style={{ width: 32, height: 32 }} />
+        </span>
+      ),
+      label: "Bilgi",
+      labelEn: "Info"
+    },
 };
 
 // i18n strings (Turkish primary, English fallback)

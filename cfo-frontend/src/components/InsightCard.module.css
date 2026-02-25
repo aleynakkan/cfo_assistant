@@ -49,18 +49,18 @@
 
 /* Severity variants - CSS custom properties for theming */
 .severity-critical {
-  --accent-color: #dc0005;
+  --accent-color: #ffffff;
   --accent-bg: #fff5f5;
-  --accent-border: #feb2b2;
+  --accent-border: #ffffff;
   --chip-bg: #fee;
-  --chip-text: #7f1d1d;
+  --chip-text: #ffffff;
   --icon-bg: #fef2f2;
 }
 
 .severity-medium {
-  --accent-color: #f59e0b;
+  --accent-color: #ffffff;
   --accent-bg: #fffbeb;
-  --accent-border: #fde68a;
+  --accent-border: #ffffff;
   --chip-bg: #fef3c7;
   --chip-text: #92400e;
   --icon-bg: #fffbeb;

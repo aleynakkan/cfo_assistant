@@ -55,6 +55,7 @@
   font-size: var(--font-size-helptext);
   color: #6b7280;
   font-weight: 500;
+  margin-top: -10px;
 }
 
 /* Content */

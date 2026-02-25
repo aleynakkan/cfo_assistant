@@ -52,7 +52,7 @@
 }
 
 .filterSelect {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-md) 0px var(--spacing-md) 18px;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-full);
   background-color: var(--white);
@@ -94,7 +94,7 @@
 .heroLabel {
   font-size: var(--font-size-h2);
   font-weight: 500;
-  margin: 0 0 27px 0;
+  margin: 0 0 0px 0;
   color: #ffffff;
   position: relative;
   z-index: 1;
@@ -102,7 +102,7 @@
 }
 
 .heroValue {
-  font-size: 48px;
+  font-size: 43.2px;
   font-weight: 400;
   display: flex;
   align-items: baseline;
@@ -122,7 +122,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-sm);
+  /* margin-top removed for alignment fix */
   position: relative;
   z-index: 1;
 }
@@ -195,7 +195,7 @@
 }
 
 .kpiValue {
-  font-size: 48px;
+  font-size: 43.2px;
   font-weight: 400;
   color: rgba(0, 0, 0, 0.85);
   display: flex;
@@ -310,8 +310,9 @@
 .kontrolPaneliTitle {
   margin: 0 0 27px 0;
   font-size: var(--font-size-h2);
-  font-weight: 500;
+  font-weight: 650;
   color: #0d1b1e;
+  /* removed incomplete font- property */
 }
 
 .placeholder {
