@@ -85,7 +85,6 @@
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  background: var(--icon-bg);
   flex-shrink: 0;
   position: relative;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);

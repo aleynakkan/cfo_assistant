@@ -352,7 +352,8 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
           display: "grid", 
           gridTemplateColumns: "4.17fr 2fr 2fr 2fr", 
           gap: "14px",
-          marginBottom: "12px"
+          marginBottom: "8px"
+          
         }}>
           {/* Red Hero Card: Tahmini Nakit */}
           <div className={styles.heroCard} style={{ position: 'relative', overflow: 'hidden' }}>
@@ -366,6 +367,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
                       alt={cashPosition.change_30_days_percent >= 0 ? 'artış' : 'düşüş'}
                       style={{ width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '2px', filter: 'brightness(0) invert(1)' }}
                     />
+                    <span style={{ marginLeft: '4px' }}></span>
                     {Math.abs(cashPosition.change_30_days_percent).toFixed(1)}%
                   </span>
                   <span className={styles.changeLabel}>son 1 ay</span>
