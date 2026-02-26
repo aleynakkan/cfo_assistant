@@ -382,7 +382,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
               style={{
                 position: 'absolute',
                 bottom: -30,
-                right: -30,
+                right: -35,
                 height: '80%',
                 width: 'auto',
                 opacity: 0.15,
