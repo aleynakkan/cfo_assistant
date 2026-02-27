@@ -82,7 +82,7 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart
               data={chartData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              margin={{ top: 10, right: 30, left: 0, bottom: -10 }}
             >
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
@@ -94,8 +94,9 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
               <XAxis
                 dataKey="name"
                 tick={{ fontSize: 12 }}
-                tickLine={false}
+                tick0Line={false}
                 axisLine={false}
+              
               />
               <YAxis
                 tickFormatter={(value) =>
@@ -118,6 +119,17 @@ export default function CashForecastCard({ estimatedCash, onChartDataUpdate }) {
                     maximumFractionDigits: 0,
                   })} TL`
                 }
+                labelFormatter={(label) => {
+                  // label genellikle haftayı temsil ediyor (ör: '3. Hafta')
+                  // Mevcut günün tarihinden label kadar hafta ekleyip gösterelim
+                  const weekMatch = label.match(/(\d+)/);
+                  let weekNum = weekMatch ? parseInt(weekMatch[1], 10) : 0;
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const targetDate = new Date(today);
+                  targetDate.setDate(today.getDate() + (weekNum * 7));
+                  return targetDate.toLocaleDateString("tr-TR");
+                }}
               />
               <Area
                 type="monotone"

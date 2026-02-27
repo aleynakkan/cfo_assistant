@@ -78,8 +78,8 @@
 
 /* Icon Badge */
 .icon {
-  width: 56px;
-  height: 56px;
+  width: 24px;
+  height: 24px;
   border-radius: 16px;
   display: flex;
   align-items: center;

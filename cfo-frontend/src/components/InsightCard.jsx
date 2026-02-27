@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import useFocusTrap from "../hooks/useFocusTrap";
 import styles from "./InsightCard.module.css";
-import warningIcon from "../assets/insights/warning.svg";
 import risklitahsilat_icon from "../assets/insights/risklitahsilat_icon.svg";
 import uyari_icon from "../assets/insights/uyari_icon.svg";
 import bilgi_icon from "../assets/insights/bilgi_icon.svg";
@@ -126,7 +125,7 @@ const severityConfig = {
           borderRadius: '50%',
           background: '#fff',
         }}>
-          <img src={risklitahsilat_icon} alt="Kritik" style={{ width: 32, height: 32 }} />
+          <img src={risklitahsilat_icon} alt="Kritik" style={{ width: 25, height: 25 }} />
         </span>
       ),
       label: "Kritik",
@@ -143,7 +142,7 @@ const severityConfig = {
           borderRadius: '50%',
           background: '#fff',
         }}>
-          <img src={uyari_icon} alt="Uyarı" style={{ width: 32, height: 32 }} />
+          <img src={uyari_icon} alt="Uyarı" style={{ width: 25, height: 25, color: '#000000' }} />
         </span>
       ),
       label: "Uyarı",
@@ -160,7 +159,7 @@ const severityConfig = {
           borderRadius: '50%',
           background: '#fff',
         }}>
-          <img src={bilgi_icon} alt="Bilgi" style={{ width: 32, height: 32 }} />
+          <img src={bilgi_icon} alt="Bilgi" style={{ width: 25, height: 25 }} />
         </span>
       ),
       label: "Bilgi",
@@ -177,7 +176,7 @@ const severityConfig = {
           borderRadius: '50%',
           background: '#fff',
         }}>
-          <img src={bilgi_icon} alt="Bilgi" style={{ width: 32, height: 32 }} />
+          <img src={bilgi_icon} alt="Bilgi" style={{ width: 25, height: 25 }} />
         </span>
       ),
       label: "Bilgi",

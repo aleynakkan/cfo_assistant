@@ -27,7 +27,7 @@ export default function Navbar({ view, setView, onLogout, onInitialBalance, onPr
           className={view === 'dashboard' ? styles.redButton : styles.outlineButton}
           onClick={() => setView('dashboard')}
         >
-          <img src={dashboard_icon} alt="Dashboard" style={{ width: '18px', height: '18px' }} /> <span>Dashboard</span>
+          <img src={dashboard_icon} alt="Dashboard" style={{ width: '18px', height: '18px' }} /> <span>Ana Sayfa</span>
         </button>
         
         <button 
