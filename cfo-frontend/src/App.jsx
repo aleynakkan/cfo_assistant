@@ -2453,7 +2453,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
       <div
         style={{
           display: "flex",
-          gap: "24px",
+          gap: "4px",
           borderBottom: "2px solid #f3f4f6",
           marginBottom: "24px",
           width: "100%",
@@ -2466,19 +2466,21 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
             setCurrentPage(1);
           }}
           style={{
-            padding: "12px 0",
+            padding: "12px 24px",
             border: "none",
             background: "transparent",
             color: activeTab === "islem" ? "#0d1b1e" : "#6b7280",
             fontSize: "14px",
             fontWeight: activeTab === "islem" ? 600 : 500,
             cursor: "pointer",
-            borderBottom: activeTab === "islem" ? "3px solid #dc0005" : "transparent",
+            borderBottom: activeTab === "islem" ? "2px solid #dc0005" : "2px solid #fff",
             transition: "all 0.2s",
             marginBottom: "-2px",
+            borderRadius: 0,
+            minWidth: 120,
           }}
         >
-          Islem Listesi
+          İşlem Listesi
         </button>
         <button
           onClick={() => {
@@ -2486,19 +2488,21 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
             setCurrentPage(1);
           }}
           style={{
-            padding: "12px 0",
+            padding: "12px 24px",
             border: "none",
             background: "transparent",
             color: activeTab === "planli" ? "#0d1b1e" : "#6b7280",
             fontSize: "14px",
             fontWeight: activeTab === "planli" ? 600 : 500,
             cursor: "pointer",
-            borderBottom: activeTab === "planli" ? "3px solid #dc0005" : "transparent",
+            borderBottom: activeTab === "planli" ? "2px solid #dc0005" : "2px solid #fff",
             transition: "all 0.2s",
             marginBottom: "-2px",
+            borderRadius: 0,
+            minWidth: 180,
           }}
         >
-          Planli Nakit Akisi Listesi
+          Planlı Nakit Akışı Listesi
         </button>
       </div>
 
@@ -2574,7 +2578,7 @@ function DataManagementView({ onDataChanged, transactions, loading, error, token
                                 setSelectedTransactions(new Set());
                               }
                             }}
-                            style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                            style={{ width: "16px", height: "16px", cursor: "pointer", background: "white", border: "1px solid #d1d5db", borderRadius: "4px" }}
                           />
                         </Th>
                         <Th onClick={() => toggleTransactionSort("date")} style={{ cursor: "pointer", userSelect: "none", width: "70px", minWidth: "70px" }}>
