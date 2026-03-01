@@ -14,7 +14,7 @@ export default function Navbar({ view, setView, onLogout, onInitialBalance, onPr
   return (
     <nav className={styles.navbar}>
       {/* Left: Logo */}
-      <div className={styles.logo}>
+      <div className={styles.logo} onClick={() => setView('dashboard')} style={{ cursor: 'pointer' }}>
         <img 
           src={logoName} 
           alt="Seyfo Logo" 

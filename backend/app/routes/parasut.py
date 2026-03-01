@@ -542,3 +542,140 @@ async def import_sales_invoices(
         "hatali": hatali,
         "detay": detay,
     }
+
+
+@router.post("/import-purchase-bills")
+async def import_purchase_bills(
+    db: Session = Depends(get_db),
+    company: Company = Depends(get_current_company),
+):
+    """
+    Paraşüt'ten alış faturalarını çeker ve planned_cashflow_items tablosuna aktarır.
+
+    - Alış faturaları → type='INVOICE', direction='out' (ödeme yükümlülüğü)
+    - Her faturanın Paraşüt ID'si "pb_{id}" formatında external_id alanında saklanır (idempotency)
+    - Daha önce aktarılmış faturalar atlanır
+    - Tedarikçi adı counterparty alanına, varsa counterparty_id eşleştirilir
+    """
+    integration = _get_integration(db, company.id)
+    access_token = await _ensure_valid_token(integration, db)
+
+    # Tüm sayfaları çek
+    tum_faturalar = []
+    sayfa = 1
+    while True:
+        params = {
+            "page[number]": sayfa,
+            "page[size]": 25,
+            "include": "contact",
+        }
+        data = await _parasut_get(
+            access_token,
+            f"/{integration.parasut_company_id}/purchase_bills",
+            params,
+        )
+
+        faturalar = data.get("data", [])
+        included = data.get("included", [])
+
+        # Contact id → name eşleşme haritası
+        contacts_map = _build_contacts_map(included)
+
+        for fatura in faturalar:
+            tum_faturalar.append((fatura, contacts_map))
+
+        # Sonraki sayfa var mı kontrol et
+        meta = data.get("meta", {})
+        toplam_sayfa = meta.get("total_pages", 1)
+        if sayfa >= toplam_sayfa:
+            break
+        sayfa += 1
+
+    # Mevcut Paraşüt alış faturası ID'lerini topla (idempotency kontrolü)
+    mevcut_external_ids = set(
+        row[0] for row in db.query(PlannedCashflowItem.external_id).filter(
+            PlannedCashflowItem.company_id == company.id,
+            PlannedCashflowItem.source == "parasut",
+            PlannedCashflowItem.external_id.isnot(None),
+        ).all()
+    )
+
+    eklenen = 0
+    atlanan = 0
+    hatali = 0
+    detay = []
+
+    for fatura, contacts_map in tum_faturalar:
+        parasut_id = str(fatura.get("id", ""))
+        external_id = f"pb_{parasut_id}"
+        attr = fatura.get("attributes", {})
+
+        # Daha önce aktarılmış mı kontrol et
+        if external_id in mevcut_external_ids:
+            atlanan += 1
+            continue
+
+        try:
+            # Tedarikçi bilgisi — alış faturalarında ilişki "spender" veya "contact" olabilir
+            relationships = fatura.get("relationships", {})
+            contact_data = (
+                relationships.get("spender", {}).get("data")
+                or relationships.get("contact", {}).get("data")
+            )
+            contact_id = contact_data.get("id") if contact_data else None
+            tedarikci_adi = contacts_map.get(contact_id, "") if contact_id else ""
+
+            # Counterparty eşleştirme
+            counterparty_id = _find_counterparty_id(db, company.id, tedarikci_adi)
+
+            # Tutar bilgileri
+            net_total = Decimal(str(attr.get("net_total", "0")))
+            total_paid = Decimal(str(attr.get("total_paid", "0")))
+            remaining = Decimal(str(attr.get("remaining", "0")))
+
+            # Vade tarihi
+            due_date_str = attr.get("due_date") or attr.get("issue_date")
+            due_date = date_type.fromisoformat(due_date_str) if due_date_str else None
+
+            if not due_date:
+                hatali += 1
+                detay.append(f"Fatura pb_{parasut_id}: Vade tarihi bulunamadı, atlandı")
+                continue
+
+            # Referans numarası: açıklama veya fatura no
+            reference = attr.get("description") or attr.get("invoice_no") or f"Paraşüt Alış #{parasut_id}"
+
+            # Yeni kayıt oluştur
+            yeni_kayit = PlannedCashflowItem(
+                type="INVOICE",
+                direction="out",
+                amount=net_total,
+                due_date=due_date,
+                counterparty=tedarikci_adi or None,
+                counterparty_id=counterparty_id,
+                reference_no=reference,
+                status=_map_payment_status(attr.get("payment_status", "unpaid")),
+                settled_amount=total_paid,
+                remaining_amount=remaining,
+                source="parasut",
+                external_id=external_id,
+                company_id=company.id,
+            )
+
+            db.add(yeni_kayit)
+            eklenen += 1
+            detay.append(f"Fatura pb_{parasut_id} ({tedarikci_adi}): ₺{net_total} — eklendi")
+
+        except Exception as e:
+            hatali += 1
+            detay.append(f"Fatura pb_{parasut_id}: Hata — {str(e)}")
+
+    db.commit()
+
+    return {
+        "toplam_fatura": len(tum_faturalar),
+        "eklenen": eklenen,
+        "atlanan_mevcut": atlanan,
+        "hatali": hatali,
+        "detay": detay,
+    }
