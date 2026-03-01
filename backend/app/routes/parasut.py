@@ -567,7 +567,7 @@ async def import_purchase_bills(
         params = {
             "page[number]": sayfa,
             "page[size]": 25,
-            "include": "contact",
+            "include": "spender",
         }
         data = await _parasut_get(
             access_token,
