@@ -2,7 +2,40 @@ import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../api/client";
 import styles from "./CounterpartyView.module.css";
 
-// ─── Helper ───
+// ─── Inline SVG Icons (matching Figma) ───
+
+const IconShuffle = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 3h5v5" /><path d="M4 20 21 3" /><path d="M21 16v5h-5" /><path d="M15 15l6 6" /><path d="M4 4l5 5" />
+  </svg>
+);
+
+const IconPlus = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14" /><path d="M12 5v14" />
+  </svg>
+);
+
+const IconPencil = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+  </svg>
+);
+
+const IconTrash = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+  </svg>
+);
+
+const IconArrowLeft = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
+  </svg>
+);
+
+// ─── Helpers ───
+
 function formatCurrency(val) {
   if (val == null) return "—";
   return new Intl.NumberFormat("tr-TR", {
@@ -13,18 +46,23 @@ function formatCurrency(val) {
   }).format(val);
 }
 
-function riskClass(score) {
-  if (score == null) return "";
-  if (score <= 30) return styles.riskLow;
-  if (score <= 60) return styles.riskMedium;
-  return styles.riskHigh;
+function riskLabelText(score) {
+  if (score == null) return "—";
+  if (score <= 30) return "Düşük";
+  if (score <= 60) return "Orta";
+  return "Yüksek";
 }
 
-function riskLabel(score) {
-  if (score == null) return "—";
-  if (score <= 30) return `${score} (Düşük)`;
-  if (score <= 60) return `${score} (Orta)`;
-  return `${score} (Yüksek)`;
+function riskBarClass(score) {
+  if (score == null || score <= 30) return styles.riskBarLow;
+  if (score <= 60) return styles.riskBarMedium;
+  return styles.riskBarHigh;
+}
+
+function riskMetricClass(score) {
+  if (score == null || score <= 30) return styles.metricRiskLow;
+  if (score <= 60) return styles.metricRiskMedium;
+  return styles.metricRiskHigh;
 }
 
 function typeLabel(t) {
@@ -130,7 +168,18 @@ export default function CounterpartyView({ token }) {
     }
   };
 
-  // ── Open edit modal ──
+  // ── Open edit modal (from list) ──
+  const openEditFromList = (cp) => {
+    setFormName(cp.name || "");
+    setFormType(cp.type || "OTHER");
+    setFormVkn(cp.vkn || "");
+    setFormNotes(cp.notes || "");
+    setSelectedCp(cp);
+    setEditMode(true);
+    setShowModal(true);
+  };
+
+  // ── Open edit modal (from detail) ──
   const openEditModal = () => {
     if (!selectedCp) return;
     setFormName(selectedCp.name || "");
@@ -233,12 +282,6 @@ export default function CounterpartyView({ token }) {
     }
   };
 
-  // ── Open detail ──
-  const openDetail = (cp) => {
-    setActiveTab("detail");
-    loadDetail(cp.id);
-  };
-
   // ── Merge metrics with list ──
   const metricsMap = {};
   metrics.forEach((m) => {
@@ -250,108 +293,178 @@ export default function CounterpartyView({ token }) {
   // ════════════════════════════════════════
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <h1 className={styles.title}>
-          {activeTab === "detail" && selectedCp
-            ? "Cari Detay"
-            : "Cari Hesaplar"}
-        </h1>
-        <div style={{ display: "flex", gap: 10 }}>
-          {activeTab === "list" && (
-            <>
-              <button
-                className={styles.backButton}
-                onClick={handleBackfill}
-                title="Mevcut planlanan kalemlerden cari oluştur"
-              >
-                🔄 Otomatik Oluştur
-              </button>
-              <button
-                className={styles.addButton}
-                onClick={() => setShowModal(true)}
-              >
-                + Yeni Cari
-              </button>
-            </>
-          )}
+    <div className={styles.pageWrapper}>
+      <div className={styles.container}>
+        {/* Header */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.title}>
+              {activeTab === "detail" && selectedCp
+                ? "Cari Detay"
+                : "Cari Hesaplar"}
+            </h1>
+            {activeTab === "list" && (
+              <p className={styles.subtitle}>Tüm cari hesaplarınızı yönetin</p>
+            )}
+          </div>
+          <div className={styles.headerActions}>
+            {activeTab === "list" && (
+              <>
+                <button
+                  className={styles.btnOutline}
+                  onClick={handleBackfill}
+                  title="Mevcut planlanan kalemlerden cari oluştur"
+                >
+                  <IconShuffle /> Otomatik Oluştur
+                </button>
+                <button
+                  className={styles.btnPrimary}
+                  onClick={() => {
+                    setEditMode(false);
+                    setFormName("");
+                    setFormType("OTHER");
+                    setFormVkn("");
+                    setFormNotes("");
+                    setShowModal(true);
+                  }}
+                >
+                  <IconPlus /> Yeni Cari
+                </button>
+              </>
+            )}
+            {activeTab === "detail" && (
+              <>
+                <button
+                  className={styles.btnOutline}
+                  onClick={openEditModal}
+                >
+                  <IconPencil /> Düzenle
+                </button>
+                <button
+                  className={styles.btnOutline}
+                  onClick={() => {
+                    setActiveTab("list");
+                    setSelectedCp(null);
+                  }}
+                >
+                  <IconArrowLeft /> Listeye Dön
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ─── LIST VIEW ─── */}
-      {activeTab === "list" && (
-        <>
-          {counterparties.length === 0 ? (
-            <div className={styles.emptyState}>
-              <h3>Henüz cari tanımlanmamış</h3>
-              <p>
-                Yeni cari ekleyin veya "Otomatik Oluştur" ile mevcut
-                planlamalardan oluşturun.
-              </p>
-            </div>
-          ) : (
-            <div className={styles.tableWrapper}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Cari Adı</th>
-                    <th>Tür</th>
-                    <th>Toplam Plan</th>
-                    <th>Ödenen</th>
-                    <th>Kalan</th>
-                    <th>Ort. Gecikme</th>
-                    <th>Risk</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {counterparties.map((cp) => {
-                    const m = metricsMap[cp.id] || {};
-                    return (
-                      <tr key={cp.id} onClick={() => openDetail(cp)}>
-                        <td style={{ fontWeight: 600 }}>{cp.name}</td>
-                        <td>
-                          <span
-                            className={`${styles.badge} ${typeBadge(cp.type)}`}
-                          >
-                            {typeLabel(cp.type)}
-                          </span>
-                        </td>
-                        <td>{formatCurrency(m.total_planned)}</td>
-                        <td>{formatCurrency(m.total_paid)}</td>
-                        <td>{formatCurrency(m.outstanding)}</td>
-                        <td>
-                          {m.avg_payment_delay_days != null
-                            ? `${m.avg_payment_delay_days} gün`
-                            : "—"}
-                        </td>
-                        <td>
-                          <span className={riskClass(m.risk_score)}>
-                            {riskLabel(m.risk_score)}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className={styles.backButton}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(cp.id);
-                            }}
-                            style={{ fontSize: 12, padding: "4px 10px" }}
-                          >
-                            Sil
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </>
-      )}
+        {/* ─── LIST VIEW ─── */}
+        {activeTab === "list" && (
+          <>
+            {counterparties.length === 0 ? (
+              <div className={styles.emptyState}>
+                <h3>Henüz cari tanımlanmamış</h3>
+                <p>
+                  Yeni cari ekleyin veya "Otomatik Oluştur" ile mevcut
+                  planlamalardan oluşturun.
+                </p>
+              </div>
+            ) : (
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Cari Adı</th>
+                      <th>Tür</th>
+                      <th className={styles.alignRight}>Toplam Tutar</th>
+                      <th className={styles.alignRight}>Ödenen</th>
+                      <th className={styles.alignRight}>Kalan</th>
+                      <th className={styles.alignCenter}>Ort. Gecikme</th>
+                      <th className={styles.alignCenter}>Risk</th>
+                      <th className={styles.alignRight}>İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {counterparties.map((cp) => {
+                      const m = metricsMap[cp.id] || {};
+                      const riskScore = m.risk_score ?? 0;
+                      const delayDays = m.avg_payment_delay_days;
+                      const delayClass =
+                        delayDays == null
+                          ? styles.delayNeutral
+                          : delayDays < 0
+                          ? styles.delayNegative
+                          : styles.delayPositive;
+
+                      return (
+                        <tr key={cp.id}>
+                          <td className={styles.nameCell}>{cp.name}</td>
+                          <td>
+                            <span
+                              className={`${styles.badge} ${typeBadge(cp.type)}`}
+                            >
+                              {typeLabel(cp.type)}
+                            </span>
+                          </td>
+                          <td className={styles.alignRight}>
+                            {formatCurrency(m.total_planned)}
+                          </td>
+                          <td className={styles.alignRight}>
+                            {formatCurrency(m.total_paid)}
+                          </td>
+                          <td className={styles.alignRight}>
+                            {formatCurrency(m.outstanding)}
+                          </td>
+                          <td className={`${styles.alignCenter} ${delayClass}`}>
+                            {delayDays != null
+                              ? `${delayDays} gün`
+                              : "—"}
+                          </td>
+                          <td>
+                            <div className={styles.riskCell}>
+                              <div className={styles.riskHeader}>
+                                <span className={styles.riskLabel}>
+                                  {riskLabelText(m.risk_score)}
+                                </span>
+                                <span className={styles.riskPercent}>
+                                  {m.risk_score != null
+                                    ? `${m.risk_score}%`
+                                    : "0%"}
+                                </span>
+                              </div>
+                              <div className={styles.riskTrack}>
+                                <div
+                                  className={`${styles.riskBar} ${riskBarClass(
+                                    m.risk_score
+                                  )}`}
+                                  style={{ width: `${riskScore}%` }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className={styles.actionsCell}>
+                            <div className={styles.actionsGroup}>
+                              <button
+                                className={styles.btnIcon}
+                                title="Düzenle"
+                                onClick={() => openEditFromList(cp)}
+                              >
+                                <IconPencil />
+                              </button>
+                              <button
+                                className={`${styles.btnIcon} ${styles.btnIconDanger}`}
+                                title="Sil"
+                                onClick={() => handleDelete(cp.id)}
+                              >
+                                <IconTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
 
       {/* ─── DETAIL VIEW ─── */}
       {activeTab === "detail" && selectedCp && (
@@ -365,33 +478,13 @@ export default function CounterpartyView({ token }) {
                 {typeLabel(selectedCp.type)}
               </span>
               {selectedCp.vkn && (
-                <span style={{ display: 'inline-block', marginLeft: 10, padding: '2px 10px', background: '#f3f4f6', borderRadius: 6, fontFamily: 'monospace', fontSize: 13, color: '#374151' }}>
+                <span className={styles.detailVkn}>
                   VKN: {selectedCp.vkn}
                 </span>
               )}
               {selectedCp.notes && (
-                <p style={{ color: "#6b7280", marginTop: 8, fontSize: 14 }}>
-                  {selectedCp.notes}
-                </p>
+                <p className={styles.detailNotes}>{selectedCp.notes}</p>
               )}
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                className={styles.addButton}
-                onClick={openEditModal}
-                style={{ fontSize: 13, padding: '6px 16px' }}
-              >
-                ✏️ Düzenle
-              </button>
-              <button
-                className={styles.backButton}
-                onClick={() => {
-                  setActiveTab("list");
-                  setSelectedCp(null);
-                }}
-              >
-                ← Listeye Dön
-              </button>
             </div>
           </div>
 
@@ -449,11 +542,13 @@ export default function CounterpartyView({ token }) {
               <div className={styles.metricCard}>
                 <div className={styles.metricLabel}>Risk Skoru</div>
                 <div
-                  className={`${styles.metricValue} ${riskClass(
+                  className={`${styles.metricValue} ${riskMetricClass(
                     singleMetrics.risk_score
                   )}`}
                 >
-                  {riskLabel(singleMetrics.risk_score)}
+                  {singleMetrics.risk_score != null
+                    ? `${singleMetrics.risk_score} (${riskLabelText(singleMetrics.risk_score)})`
+                    : "—"}
                 </div>
               </div>
             </div>
@@ -464,7 +559,7 @@ export default function CounterpartyView({ token }) {
             <h3 className={styles.aliasTitle}>
               Banka Açıklama Eşleştirmeleri (Alias)
             </h3>
-            <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 12 }}>
+            <p className={styles.aliasDescription}>
               Banka hareketi açıklamasında geçebilecek ifadeleri ekleyin.
               Otomatik eşleşmede kullanılır.
             </p>
@@ -552,7 +647,7 @@ export default function CounterpartyView({ token }) {
                 inputMode="numeric"
               />
               {formVkn && formVkn.length !== 10 && formVkn.length > 0 && (
-                <span style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>
+                <span className={styles.vknHint}>
                   VKN 10 haneli olmalıdır ({formVkn.length}/10)
                 </span>
               )}
@@ -586,6 +681,7 @@ export default function CounterpartyView({ token }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
