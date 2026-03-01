@@ -318,7 +318,7 @@ async def get_purchase_bills(
     params = {
         "page[number]": page,
         "page[size]": page_size,
-        "include": "spender,details,details.product",
+        "include": "spender,details,details.product,supplier",
     }
     if issue_date:
         params["filter[issue_date]"] = issue_date
@@ -378,11 +378,12 @@ def _map_payment_status(parasut_status: str) -> str:
 
 def _build_contacts_map(included: list) -> dict:
     """
-    Paraşüt response'undaki included dizisinden contact id → name eşleşmesi oluşturur.
+    Paraşüt response'undaki included dizisinden contact/spender id → name eşleşmesi oluşturur.
+    Satış faturalarında type='contacts', alış faturalarında type='spenders' olabilir.
     """
     contacts_map = {}
     for item in (included or []):
-        if item.get("type") == "contacts":
+        if item.get("type") in ("contacts", "spenders", "suppliers"):
             contacts_map[item["id"]] = item.get("attributes", {}).get("name", "")
     return contacts_map
 
@@ -616,10 +617,11 @@ async def import_purchase_bills(
             continue
 
         try:
-            # Tedarikçi bilgisi — alış faturalarında ilişki "spender" veya "contact" olabilir
+            # Tedarikçi bilgisi — alış faturalarında ilişki "supplier", "spender" veya "contact" olabilir
             relationships = fatura.get("relationships", {})
             contact_data = (
-                relationships.get("spender", {}).get("data")
+                relationships.get("supplier", {}).get("data")
+                or relationships.get("spender", {}).get("data")
                 or relationships.get("contact", {}).get("data")
             )
             contact_id = contact_data.get("id") if contact_data else None
