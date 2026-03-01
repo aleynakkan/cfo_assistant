@@ -568,7 +568,6 @@ async def import_purchase_bills(
         params = {
             "page[number]": sayfa,
             "page[size]": 25,
-            "include": "spender",
         }
         data = await _parasut_get(
             access_token,
@@ -577,13 +576,43 @@ async def import_purchase_bills(
         )
 
         faturalar = data.get("data", [])
-        included = data.get("included", [])
-
-        # Contact id → name eşleşme haritası
-        contacts_map = _build_contacts_map(included)
 
         for fatura in faturalar:
-            tum_faturalar.append((fatura, contacts_map))
+            tum_faturalar.append(fatura)
+
+        # Sonraki sayfa var mı kontrol et
+        meta = data.get("meta", {})
+        toplam_sayfa = meta.get("total_pages", 1)
+        if sayfa >= toplam_sayfa:
+            break
+        sayfa += 1
+
+    # Faturalardaki benzersiz supplier (contact) ID'lerini topla
+    supplier_ids = set()
+    for fatura in tum_faturalar:
+        relationships = fatura.get("relationships", {})
+        supplier_data = (
+            relationships.get("supplier", {}).get("data")
+            or relationships.get("spender", {}).get("data")
+            or relationships.get("contact", {}).get("data")
+        )
+        if supplier_data and supplier_data.get("id"):
+            supplier_ids.add(supplier_data["id"])
+
+    # Her supplier ID için Paraşüt contacts API'den ad bilgisini çek
+    contacts_map = {}
+    for sid in supplier_ids:
+        try:
+            contact_data = await _parasut_get(
+                access_token,
+                f"/{integration.parasut_company_id}/contacts/{sid}",
+            )
+            ad = contact_data.get("data", {}).get("attributes", {}).get("name", "")
+            if ad:
+                contacts_map[sid] = ad
+        except Exception:
+            # Contact bilgisi alınamazsa atla
+            pass
 
         # Sonraki sayfa var mı kontrol et
         meta = data.get("meta", {})
@@ -606,7 +635,7 @@ async def import_purchase_bills(
     hatali = 0
     detay = []
 
-    for fatura, contacts_map in tum_faturalar:
+    for fatura in tum_faturalar:
         parasut_id = str(fatura.get("id", ""))
         external_id = f"pb_{parasut_id}"
         attr = fatura.get("attributes", {})
@@ -617,7 +646,7 @@ async def import_purchase_bills(
             continue
 
         try:
-            # Tedarikçi bilgisi — alış faturalarında ilişki "supplier", "spender" veya "contact" olabilir
+            # Tedarikçi bilgisi — supplier.data.id ile contacts_map'ten ad al
             relationships = fatura.get("relationships", {})
             contact_data = (
                 relationships.get("supplier", {}).get("data")
