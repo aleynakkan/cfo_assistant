@@ -51,7 +51,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     subject = "Seyfo - Şifre Sıfırlama"
 
     # Logo: PNG varsa CID ile göster, yoksa text fallback
-    logo_html = '<img src="cid:seyfo_logo" alt="Seyfo" width="200" style="max-width:200px;height:auto;" />' if _LOGO_PNG else "<h1 style='color:#dc2626;font-size:24px;margin:0'>Seyfo</h1>"
+    logo_html = '<img src="cid:seyfo_logo" alt="Seyfo" style="height:auto;" />' if _LOGO_PNG else "<h1 style='color:#dc2626;font-size:24px;margin:0'>Seyfo</h1>"
 
     html_body = f"""
     <!DOCTYPE html>
