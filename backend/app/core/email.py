@@ -18,16 +18,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 
-# Logo SVG → PNG dönüşümü (email istemcileri SVG desteklemez)
+# Logo PNG dosyasını oku (email istemcileri SVG desteklemez)
 _ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
-_LOGO_PNG: bytes | None = None
-try:
-    import cairosvg
-    _svg_path = _ASSETS_DIR / "logo-name.svg"
-    if _svg_path.exists():
-        _LOGO_PNG = cairosvg.svg2png(url=str(_svg_path), output_width=400)
-except Exception as e:
-    print(f"[EMAIL] Logo PNG dönüşümü başarısız: {e}")
+_logo_path = _ASSETS_DIR / "logo-name.png"
+_LOGO_PNG: bytes | None = _logo_path.read_bytes() if _logo_path.exists() else None
+if not _LOGO_PNG:
+    print("[EMAIL] Logo bulunamadı:", _logo_path)
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
