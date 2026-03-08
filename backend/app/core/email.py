@@ -13,16 +13,19 @@ Ortam değişkenleri:
 
 import os
 import smtplib
+import base64
 from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# Logo SVG dosyasını oku
+# Logo SVG dosyasını oku ve base64 data URI'ye çevir (email istemcileri inline SVG desteklemez)
 _ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 try:
-    LOGO_SVG = (_ASSETS_DIR / "logo-name.svg").read_text(encoding="utf-8")
+    _logo_bytes = (_ASSETS_DIR / "logo-name.svg").read_bytes()
+    _logo_b64 = base64.b64encode(_logo_bytes).decode("ascii")
+    LOGO_HTML = f'<img src="data:image/svg+xml;base64,{_logo_b64}" alt="Seyfo" width="200" style="max-width:200px;height:auto;" />'
 except FileNotFoundError:
-    LOGO_SVG = "<h1 style='color:#dc2626;font-size:24px;margin:0'>Seyfo</h1>"
+    LOGO_HTML = "<h1 style='color:#dc2626;font-size:24px;margin:0'>Seyfo</h1>"
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
@@ -69,7 +72,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     <body>
         <div class="container">
             <div class="header">
-                {LOGO_SVG}
+                {LOGO_HTML}
             </div>
             <div class="content">
                 <p>Merhaba,</p>
