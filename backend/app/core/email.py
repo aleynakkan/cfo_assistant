@@ -13,19 +13,21 @@ Ortam değişkenleri:
 
 import os
 import smtplib
-import base64
 from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 
-# Logo SVG dosyasını oku ve base64 data URI'ye çevir (email istemcileri inline SVG desteklemez)
+# Logo SVG → PNG dönüşümü (email istemcileri SVG desteklemez)
 _ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+_LOGO_PNG: bytes | None = None
 try:
-    _logo_bytes = (_ASSETS_DIR / "logo-name.svg").read_bytes()
-    _logo_b64 = base64.b64encode(_logo_bytes).decode("ascii")
-    LOGO_HTML = f'<img src="data:image/svg+xml;base64,{_logo_b64}" alt="Seyfo" width="200" style="max-width:200px;height:auto;" />'
-except FileNotFoundError:
-    LOGO_HTML = "<h1 style='color:#dc2626;font-size:24px;margin:0'>Seyfo</h1>"
+    import cairosvg
+    _svg_path = _ASSETS_DIR / "logo-name.svg"
+    if _svg_path.exists():
+        _LOGO_PNG = cairosvg.svg2png(url=str(_svg_path), output_width=400)
+except Exception as e:
+    print(f"[EMAIL] Logo PNG dönüşümü başarısız: {e}")
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
@@ -52,6 +54,9 @@ def send_password_reset_email(to_email: str, reset_token: str) -> bool:
 
     subject = "Seyfo - Şifre Sıfırlama"
 
+    # Logo: PNG varsa CID ile göster, yoksa text fallback
+    logo_html = '<img src="cid:seyfo_logo" alt="Seyfo" width="200" style="max-width:200px;height:auto;" />' if _LOGO_PNG else "<h1 style='color:#dc2626;font-size:24px;margin:0'>Seyfo</h1>"
+
     html_body = f"""
     <!DOCTYPE html>
     <html>
@@ -61,7 +66,6 @@ def send_password_reset_email(to_email: str, reset_token: str) -> bool:
             body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }}
             .container {{ max-width: 480px; margin: 0 auto; padding: 32px; }}
             .header {{ text-align: center; margin-bottom: 32px; }}
-            .header h1 {{ color: #dc2626; font-size: 24px; margin: 0; }}
             .content {{ background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px; }}
             .btn {{ display: inline-block; background: #dc2626; color: #ffffff !important; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 14px; }}
             .btn:hover {{ background: #b91c1c; }}
@@ -72,7 +76,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     <body>
         <div class="container">
             <div class="header">
-                {LOGO_HTML}
+                {logo_html}
             </div>
             <div class="content">
                 <p>Merhaba,</p>
@@ -105,13 +109,23 @@ Eğer bu talebi siz yapmadıysanız, bu emaili görmezden gelebilirsiniz.
     """
 
     try:
-        msg = MIMEMultipart("alternative")
+        # related > alternative > text/html yapısı (CID image için gerekli)
+        msg = MIMEMultipart("related")
         msg["Subject"] = subject
         msg["From"] = SMTP_FROM
         msg["To"] = to_email
 
-        msg.attach(MIMEText(text_body, "plain", "utf-8"))
-        msg.attach(MIMEText(html_body, "html", "utf-8"))
+        msg_alt = MIMEMultipart("alternative")
+        msg_alt.attach(MIMEText(text_body, "plain", "utf-8"))
+        msg_alt.attach(MIMEText(html_body, "html", "utf-8"))
+        msg.attach(msg_alt)
+
+        # Logo PNG'yi CID olarak ekle
+        if _LOGO_PNG:
+            logo_image = MIMEImage(_LOGO_PNG, _subtype="png")
+            logo_image.add_header("Content-ID", "<seyfo_logo>")
+            logo_image.add_header("Content-Disposition", "inline", filename="logo.png")
+            msg.attach(logo_image)
 
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.ehlo()
