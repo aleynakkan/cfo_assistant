@@ -397,3 +397,88 @@
     gap: 0;
   }
 }
+
+/* ─── Tax Settings ─── */
+.taxRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.taxToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.taxCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-primary, #dc0005);
+  cursor: pointer;
+}
+
+.taxName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #111);
+}
+
+.taxFields {
+  display: flex;
+  gap: 16px;
+  padding-left: 28px;
+  flex-wrap: wrap;
+}
+
+.taxField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.taxFieldLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary, #6b7280);
+}
+
+.taxSelect {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: white;
+  color: var(--text-primary, #111);
+}
+
+.taxSelect:focus {
+  outline: none;
+  border-color: var(--brand-primary, #dc0005);
+  box-shadow: 0 0 0 2px rgba(220, 0, 5, 0.1);
+}
+
+.taxInput {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  width: 80px;
+  color: var(--text-primary, #111);
+}
+
+.taxInput:focus {
+  outline: none;
+  border-color: var(--brand-primary, #dc0005);
+  box-shadow: 0 0 0 2px rgba(220, 0, 5, 0.1);
+}
+
+@media (max-width: 768px) {
+  .taxFields {
+    padding-left: 0;
+    flex-direction: column;
+  }
+}

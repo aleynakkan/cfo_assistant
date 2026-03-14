@@ -58,6 +58,11 @@ function App() {
   const [cashPosition, setCashPosition] = useState(null); // başlangıç bakiyesi + tahmini nakit
   const [insights, setInsights] = useState([]); // dashboard insights
   const [showInitialBalanceModal, setShowInitialBalanceModal] = useState(false); // onboarding modal
+
+  // Tax & Notification state
+  const [upcomingTaxes, setUpcomingTaxes] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState("last30");
@@ -95,6 +100,31 @@ function App() {
     setToastMessage(message);
     setToastType("success");
   };
+
+  // Tax & Notification fetch
+  async function fetchTaxAndNotifications(tokenOverride) {
+    const usedToken = tokenOverride || token;
+    if (!usedToken) return;
+    try {
+      // Trigger notification check first
+      await apiClient.withAuth(usedToken).post('/taxes/check-notifications', {});
+    } catch { /* ignore */ }
+    try {
+      const [upRes, notifRes, countRes] = await Promise.all([
+        apiClient.withAuth(usedToken).get('/taxes/upcoming?days=14'),
+        apiClient.withAuth(usedToken).get('/notifications/?limit=20'),
+        apiClient.withAuth(usedToken).get('/notifications/unread-count'),
+      ]);
+      if (upRes.ok) setUpcomingTaxes(await upRes.json());
+      if (notifRes.ok) setNotifications(await notifRes.json());
+      if (countRes.ok) {
+        const countData = await countRes.json();
+        setUnreadNotificationCount(countData.count || 0);
+      }
+    } catch (e) {
+      console.warn("Tax/notification fetch error:", e);
+    }
+  }
 
   // Logout islevi
   function handleLogout() {
@@ -367,6 +397,10 @@ function App() {
     setCategoryForecast(catForecast);
     setFixedCosts(fixedCostsData);
     setCashPosition(cashPositionData);
+
+    // 9) Tax & Notifications (fire-and-forget, don't block main load)
+    fetchTaxAndNotifications(usedToken);
+
     } catch (err) {
       console.error(err);
       setError(err.message || "Bilinmeyen hata");
@@ -445,6 +479,10 @@ function App() {
             onProfileSettings={() => setView('settings')}
             onAiChatToggle={() => setAiChatPanelOpen(!aiChatPanelOpen)}
             userName={userName}
+            token={token}
+            notifications={notifications}
+            unreadNotificationCount={unreadNotificationCount}
+            onRefreshNotifications={() => fetchTaxAndNotifications()}
           />
 
           {/* Loading overlay when data is being fetched */}
@@ -513,6 +551,8 @@ function App() {
               userName={userName}
               token={token}
               onRefreshDashboard={loadData}
+              upcomingTaxes={upcomingTaxes}
+              onRefreshTaxes={() => fetchTaxAndNotifications()}
             />
           ) : view === "counterparties" ? (
             <CounterpartyView token={token} />

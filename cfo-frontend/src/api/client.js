@@ -43,6 +43,16 @@ export const apiClient = {
     });
   },
 
+  async patch(path, data, options = {}) {
+    return fetch(`${API_BASE}${path}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      body: data ? JSON.stringify(data) : undefined,
+      signal: options.signal,
+      credentials: options.credentials,
+    });
+  },
+
   withAuth(token) {
     return {
       get: (path, options = {}) => this.get(path, {
@@ -55,6 +65,9 @@ export const apiClient = {
         ...options, headers: { Authorization: `Bearer ${token}`, ...options.headers }
       }),
       delete: (path, options = {}) => this.delete(path, {
+        ...options, headers: { Authorization: `Bearer ${token}`, ...options.headers }
+      }),
+      patch: (path, data, options = {}) => this.patch(path, data, {
         ...options, headers: { Authorization: `Bearer ${token}`, ...options.headers }
       }),
     };

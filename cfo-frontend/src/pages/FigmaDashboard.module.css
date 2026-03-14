@@ -60,7 +60,95 @@
   color: var(--text-dark);
   cursor: pointer;
   box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.12);
+  margin-left: 8px;
+}
+
+/* Source Multi-Select Filter */
+.sourceFilterWrapper {
+  position: relative;
   margin-left: auto;
+}
+
+.sourceFilterTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: var(--spacing-md) 18px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  background-color: var(--white);
+  font-size: var(--font-size-lg);
+  color: var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sourceFilterTrigger:hover {
+  border-color: #d1d5db;
+}
+
+.sourceFilterArrow {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.sourceDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  padding: 8px 0;
+}
+
+.sourceSelectAll {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  font-size: var(--font-size-lg);
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sourceSelectAll:hover {
+  background: #f9fafb;
+}
+
+.sourceDivider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 0;
+}
+
+.sourceOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  font-size: var(--font-size-lg);
+  color: var(--text-dark);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sourceOption:hover {
+  background: #f9fafb;
+}
+
+.sourceCheckbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-red);
+  cursor: pointer;
 }
 
 /* Red Hero Card */

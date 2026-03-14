@@ -26,6 +26,20 @@ export default function SettingsPage({ currentName, onNameChange, token, onIniti
   const [parasutMessage, setParasutMessage] = useState('');
   const [parasutStatusLoading, setParasutStatusLoading] = useState(false);
 
+  // Şifre değiştir state'leri
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Vergi ayarları state'leri
+  const [allTaxes, setAllTaxes] = useState([]);
+  const [taxConfigs, setTaxConfigs] = useState({});
+  const [taxMessage, setTaxMessage] = useState('');
+  const [taxLoading, setTaxLoading] = useState(false);
+  const [taxFetchLoading, setTaxFetchLoading] = useState(false);
+
   useEffect(() => {
     setName(currentName || 'Kevin');
   }, [currentName]);
@@ -35,7 +49,88 @@ export default function SettingsPage({ currentName, onNameChange, token, onIniti
     if (activeSection === 'integrations') {
       fetchParasutStatus();
     }
+    if (activeSection === 'taxes') {
+      fetchTaxData();
+    }
   }, [activeSection]);
+
+  const fetchTaxData = async () => {
+    setTaxFetchLoading(true);
+    try {
+      const tokenStr = token || localStorage.getItem('auth_token') || '';
+      const [taxesRes, configRes] = await Promise.all([
+        apiClient.withAuth(tokenStr).get('/taxes/'),
+        apiClient.withAuth(tokenStr).get('/taxes/my'),
+      ]);
+      if (taxesRes.ok) {
+        const taxes = await taxesRes.json();
+        setAllTaxes(taxes);
+      }
+      if (configRes.ok) {
+        const configs = await configRes.json();
+        const map = {};
+        configs.forEach(c => {
+          map[c.tax_id] = {
+            active: c.active,
+            frequency: c.frequency,
+            due_day: c.due_day,
+            due_month: c.due_month,
+          };
+        });
+        setTaxConfigs(map);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setTaxFetchLoading(false);
+    }
+  };
+
+  const handleTaxToggle = (taxId) => {
+    setTaxConfigs(prev => ({
+      ...prev,
+      [taxId]: {
+        ...(prev[taxId] || { frequency: 'monthly', due_day: 26, due_month: null }),
+        active: !(prev[taxId]?.active),
+      },
+    }));
+  };
+
+  const handleTaxFieldChange = (taxId, field, value) => {
+    setTaxConfigs(prev => ({
+      ...prev,
+      [taxId]: {
+        ...(prev[taxId] || { active: false, frequency: 'monthly', due_day: 26, due_month: null }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSaveTaxConfig = async () => {
+    setTaxLoading(true);
+    setTaxMessage('');
+    try {
+      const tokenStr = token || localStorage.getItem('auth_token') || '';
+      const configs = allTaxes.map(tax => ({
+        tax_id: tax.id,
+        active: taxConfigs[tax.id]?.active || false,
+        frequency: taxConfigs[tax.id]?.frequency || 'monthly',
+        due_day: parseInt(taxConfigs[tax.id]?.due_day) || 26,
+        due_month: taxConfigs[tax.id]?.due_month ? parseInt(taxConfigs[tax.id].due_month) : null,
+      }));
+      const response = await apiClient.withAuth(tokenStr).post('/taxes/my', { taxes: configs });
+      if (response.ok) {
+        setTaxMessage('Vergi ayarları başarıyla kaydedildi!');
+      } else {
+        const error = await response.json().catch(() => ({}));
+        setTaxMessage(error.detail || 'Kaydetme başarısız');
+      }
+    } catch (error) {
+      setTaxMessage('Hata: ' + error.message);
+    } finally {
+      setTaxLoading(false);
+    }
+  };
 
   const fetchParasutStatus = async () => {
     setParasutStatusLoading(true);
@@ -148,9 +243,51 @@ export default function SettingsPage({ currentName, onNameChange, token, onIniti
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordMessage('Tüm alanları doldurun');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordMessage('Yeni şifre en az 6 karakter olmalıdır');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage('Yeni şifreler eşleşmiyor');
+      return;
+    }
+
+    setPasswordLoading(true);
+    setPasswordMessage('');
+
+    try {
+      const tokenStr = token || localStorage.getItem('auth_token') || '';
+      const response = await apiClient.withAuth(tokenStr).post('/auth/change-password', {
+        old_password: oldPassword,
+        new_password: newPassword,
+      });
+
+      if (response.ok) {
+        setPasswordMessage('Şifreniz başarıyla güncellendi!');
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        const error = await response.json().catch(() => ({}));
+        setPasswordMessage(error.detail || 'Şifre değiştirme başarısız');
+      }
+    } catch (error) {
+      setPasswordMessage('Hata: ' + error.message);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const sections = [
     { id: 'profile', label: 'Profil', icon: '👤' },
     { id: 'balance', label: 'Başlangıç Bakiyesi', icon: '💰' },
+    { id: 'password', label: 'Şifre Değiştir', icon: '🔒' },
+    { id: 'taxes', label: 'Vergi Ayarları', icon: '📋' },
     { id: 'integrations', label: 'Entegrasyonlar', icon: '🔗' },
   ];
 
@@ -275,6 +412,186 @@ export default function SettingsPage({ currentName, onNameChange, token, onIniti
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Password Section */}
+        {activeSection === 'password' && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Şifre Değiştir</h2>
+              <p className={styles.sectionDesc}>Hesap şifrenizi güncelleyin</p>
+            </div>
+
+            <div className={styles.card}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Mevcut Şifre</label>
+                <input
+                  type="password"
+                  className={styles.input}
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="Mevcut şifrenizi girin"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Yeni Şifre</label>
+                <input
+                  type="password"
+                  className={styles.input}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Yeni şifrenizi girin"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Yeni Şifre (Tekrar)</label>
+                <input
+                  type="password"
+                  className={styles.input}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Yeni şifrenizi tekrar girin"
+                />
+              </div>
+
+              {passwordMessage && (
+                <div
+                  className={styles.message}
+                  style={{
+                    color: passwordMessage.includes('başarıyla') ? '#065f46' : '#dc2626',
+                    backgroundColor: passwordMessage.includes('başarıyla') ? '#d1fae5' : '#fee2e2',
+                  }}
+                >
+                  {passwordMessage}
+                </div>
+              )}
+
+              <div className={styles.cardActions}>
+                <button
+                  className={styles.saveButton}
+                  onClick={handleChangePassword}
+                  disabled={passwordLoading}
+                >
+                  {passwordLoading ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tax Settings Section */}
+        {activeSection === 'taxes' && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Vergi Hatırlatma Ayarları</h2>
+              <p className={styles.sectionDesc}>Takip etmek istediğiniz vergi türlerini seçin ve vade günlerini belirleyin</p>
+            </div>
+
+            {taxFetchLoading ? (
+              <div className={styles.card}>
+                <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Yükleniyor...</p>
+              </div>
+            ) : (
+              <>
+                {allTaxes.map(tax => {
+                  const cfg = taxConfigs[tax.id] || { active: false, frequency: 'monthly', due_day: 26, due_month: null };
+                  return (
+                    <div key={tax.id} className={styles.card} style={{ marginBottom: '12px' }}>
+                      <div className={styles.taxRow}>
+                        <label className={styles.taxToggle}>
+                          <input
+                            type="checkbox"
+                            checked={cfg.active}
+                            onChange={() => handleTaxToggle(tax.id)}
+                            className={styles.taxCheckbox}
+                          />
+                          <span className={styles.taxName}>{tax.name}</span>
+                        </label>
+
+                        {cfg.active && (
+                          <div className={styles.taxFields}>
+                            <div className={styles.taxField}>
+                              <label className={styles.taxFieldLabel}>Sıklık</label>
+                              <select
+                                className={styles.taxSelect}
+                                value={cfg.frequency}
+                                onChange={(e) => handleTaxFieldChange(tax.id, 'frequency', e.target.value)}
+                              >
+                                <option value="monthly">Aylık</option>
+                                <option value="quarterly">3 Aylık</option>
+                                <option value="yearly">Yıllık</option>
+                              </select>
+                            </div>
+
+                            <div className={styles.taxField}>
+                              <label className={styles.taxFieldLabel}>Vade Günü</label>
+                              <input
+                                type="number"
+                                className={styles.taxInput}
+                                value={cfg.due_day}
+                                onChange={(e) => handleTaxFieldChange(tax.id, 'due_day', e.target.value)}
+                                min={1}
+                                max={31}
+                              />
+                            </div>
+
+                            {cfg.frequency === 'yearly' && (
+                              <div className={styles.taxField}>
+                                <label className={styles.taxFieldLabel}>Vade Ayı</label>
+                                <select
+                                  className={styles.taxSelect}
+                                  value={cfg.due_month || 4}
+                                  onChange={(e) => handleTaxFieldChange(tax.id, 'due_month', e.target.value)}
+                                >
+                                  <option value={1}>Ocak</option>
+                                  <option value={2}>Şubat</option>
+                                  <option value={3}>Mart</option>
+                                  <option value={4}>Nisan</option>
+                                  <option value={5}>Mayıs</option>
+                                  <option value={6}>Haziran</option>
+                                  <option value={7}>Temmuz</option>
+                                  <option value={8}>Ağustos</option>
+                                  <option value={9}>Eylül</option>
+                                  <option value={10}>Ekim</option>
+                                  <option value={11}>Kasım</option>
+                                  <option value={12}>Aralık</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {taxMessage && (
+                  <div
+                    className={styles.message}
+                    style={{
+                      color: taxMessage.includes('başarıyla') ? '#065f46' : '#dc2626',
+                      backgroundColor: taxMessage.includes('başarıyla') ? '#d1fae5' : '#fee2e2',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    {taxMessage}
+                  </div>
+                )}
+
+                <div className={styles.cardActions}>
+                  <button
+                    className={styles.saveButton}
+                    onClick={handleSaveTaxConfig}
+                    disabled={taxLoading}
+                  >
+                    {taxLoading ? 'Kaydediliyor...' : 'Kaydet'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

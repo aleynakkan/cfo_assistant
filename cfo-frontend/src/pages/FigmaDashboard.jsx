@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '../api/client';
 import styles from './FigmaDashboard.module.css';
 import matchModalStyles from '../components/MatchModal.module.css';
 import FixedCostCard from '../components/dashboard/FixedCostCard';
 import CashForecastCard from '../components/dashboard/CashForecastCard';
 import InsightCard from '../components/InsightCard';
+import TaxReminderCard from '../components/dashboard/TaxReminderCard';
 import useFocusTrap from '../hooks/useFocusTrap';
 import tahmininakitpoz_karticon from '../assets/tahmininakitpoz_karticon.svg';
 import artis_icon from '../assets/artis_icon.svg';
 import dusus_icon from '../assets/dusus_icon.svg';
 
 
-export default function FigmaDashboard({ summary, cashPosition, matchHealth, fixedCosts, insights, userName, token, onRefreshDashboard }) {
+export default function FigmaDashboard({ summary, cashPosition, matchHealth, fixedCosts, insights, userName, token, onRefreshDashboard, upcomingTaxes = [], onRefreshTaxes }) {
   const [selectedModal, setSelectedModal] = useState(null);
   const [matchingDetails, setMatchingDetails] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,19 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
     netCash: 0,
     loading: false,
   });
+
+  // Source filter state
+  const [availableSources, setAvailableSources] = useState([]);
+  const [selectedSources, setSelectedSources] = useState([]);
+  const [sourceDropdownOpen, setSourceDropdownOpen] = useState(false);
+  const sourceDropdownRef = useRef(null);
+
+  const SOURCE_LABELS = {
+    parasut: "Paraşüt",
+    excel: "Excel",
+    manual: "Manuel",
+  };
+  const formatSourceLabel = (s) => SOURCE_LABELS[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
   // Match modal state
   const [matchModalOpen, setMatchModalOpen] = useState(false);
@@ -146,26 +160,44 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
     }
   }
 
-  async function fetchFilteredKpis(filter) {
+  async function fetchFilteredKpis(filter, sources) {
     setFilteredKpis(prev => ({ ...prev, loading: true }));
     try {
       const res = await apiClient.withAuth(token).get('/transactions');
       if (!res.ok) throw new Error("Transactions yüklenemedi");
       
       const transactions = await res.json();
+
+      // Dinamik kaynak listesini çıkar
+      const allSources = [...new Set(transactions.map(t => t.source).filter(Boolean))].sort();
+      setAvailableSources(allSources);
+      // İlk yüklemede tümünü seç (sources === null)
+      if (sources === null) {
+        setSelectedSources(allSources);
+        sources = allSources;
+      }
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
       let filtered = transactions;
       
+      // Tarih filtresi
       if (filter === "Son 30 gün") {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         thirtyDaysAgo.setHours(0, 0, 0, 0);
-        filtered = transactions.filter(t => new Date(t.date) >= thirtyDaysAgo);
+        filtered = filtered.filter(t => new Date(t.date) >= thirtyDaysAgo);
       } else if (filter === "Bu ay") {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        filtered = transactions.filter(t => new Date(t.date) >= firstDay);
+        filtered = filtered.filter(t => new Date(t.date) >= firstDay);
+      }
+
+      // Kaynak filtresi - boş array ise hiçbir şey gösterme
+      if (sources.length === 0) {
+        filtered = [];
+      } else if (sources.length < allSources.length) {
+        filtered = filtered.filter(t => sources.includes(t.source));
       }
       
       const income = filtered
@@ -191,8 +223,41 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
   function handleDateFilterChange(e) {
     const newFilter = e.target.value;
     setDateFilter(newFilter);
-    fetchFilteredKpis(newFilter);
+    fetchFilteredKpis(newFilter, selectedSources);
   }
+
+  function toggleSource(source) {
+    setSelectedSources(prev => {
+      const next = prev.includes(source)
+        ? prev.filter(s => s !== source)
+        : [...prev, source];
+      fetchFilteredKpis(dateFilter, next);
+      return next;
+    });
+  }
+
+  function toggleAllSources() {
+    if (selectedSources.length === availableSources.length) {
+      // Tümünü kaldır
+      setSelectedSources([]);
+      fetchFilteredKpis(dateFilter, []);
+    } else {
+      // Tümünü seç
+      setSelectedSources([...availableSources]);
+      fetchFilteredKpis(dateFilter, [...availableSources]);
+    }
+  }
+
+  // Dropdown dışına tıklayınca kapat
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (sourceDropdownRef.current && !sourceDropdownRef.current.contains(e.target)) {
+        setSourceDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Responsive select width based on selected option
   const selectOptions = ["Tüm zamanlar", "Son 30 gün", "Bu ay"];
@@ -206,7 +271,7 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
 
   // Sayfa yüklenince veri çek
   useEffect(() => {
-    fetchFilteredKpis("Tüm zamanlar");
+    fetchFilteredKpis("Tüm zamanlar", null);
   }, [token]);
 
   async function openMatchForPlanned(item) {
@@ -316,6 +381,47 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
         <div className={styles.header}>
          {/*<h1 className={styles.greeting}>{greeting}, {userName}! 👋</h1>*/}
           {/* Hidden span for measuring option width */}
+          {/* Source multi-select filter */}
+          {availableSources.length > 0 && (
+            <div className={styles.sourceFilterWrapper} ref={sourceDropdownRef}>
+              <button
+                type="button"
+                className={styles.sourceFilterTrigger}
+                onClick={() => setSourceDropdownOpen(prev => !prev)}
+              >
+                {selectedSources.length === 0 || selectedSources.length === availableSources.length
+                  ? "Tüm kaynaklar"
+                  : `${selectedSources.length} kaynak seçili`}
+                <span className={styles.sourceFilterArrow}>{sourceDropdownOpen ? "▲" : "▼"}</span>
+              </button>
+              {sourceDropdownOpen && (
+                <div className={styles.sourceDropdown}>
+                  <label className={styles.sourceSelectAll}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSources.length === availableSources.length}
+                      onChange={toggleAllSources}
+                      className={styles.sourceCheckbox}
+                    />
+                    {selectedSources.length === availableSources.length ? "Tümünü Kaldır" : "Tümünü Seç"}
+                  </label>
+                  <div className={styles.sourceDivider} />
+                  {availableSources.map(source => (
+                    <label key={source} className={styles.sourceOption}>
+                      <input
+                        type="checkbox"
+                        checked={selectedSources.includes(source)}
+                        onChange={() => toggleSource(source)}
+                        className={styles.sourceCheckbox}
+                      />
+                      {formatSourceLabel(source)}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <span
             ref={textMeasureRef}
             style={{
@@ -688,6 +794,13 @@ export default function FigmaDashboard({ summary, cashPosition, matchHealth, fix
           <div className={styles.card}>
             <FixedCostCard data={fixedCosts} token={token} />
           </div>
+
+          {/* Vergi Takvimi - sadece aktif vergi varsa göster */}
+          {upcomingTaxes && upcomingTaxes.length > 0 && (
+            <div className={styles.card}>
+              <TaxReminderCard upcomingTaxes={upcomingTaxes} token={token} onRefresh={onRefreshTaxes} />
+            </div>
+          )}
 
           {/* Nakit Tahmini - 30/60/90 Gün */}
           <div className={`${styles.card} ${styles.cardLarge}`}>

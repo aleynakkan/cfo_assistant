@@ -12,6 +12,7 @@ from app.models.user import User
 from app.models.company import Company
 from app.core.security import verify_password, hash_password, create_access_token
 from app.core.email import send_password_reset_email
+from app.core.deps import get_current_user
 from app.schemas.auth import Token, LoginRequest
 
 
@@ -168,3 +169,32 @@ def reset_password(
     db.commit()
 
     return {"message": "Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz."}
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+def change_password(
+    body: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Login olan kullanıcı mevcut şifresini doğrulayarak yeni şifre belirler.
+    """
+    if not body.old_password or not body.new_password:
+        raise HTTPException(status_code=400, detail="Mevcut şifre ve yeni şifre gereklidir")
+
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Yeni şifre en az 6 karakter olmalıdır")
+
+    if not verify_password(body.old_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Mevcut şifreniz hatalı")
+
+    current_user.hashed_password = hash_password(body.new_password)
+    db.commit()
+
+    return {"message": "Şifreniz başarıyla güncellendi."}

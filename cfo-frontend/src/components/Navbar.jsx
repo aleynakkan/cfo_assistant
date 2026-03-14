@@ -4,10 +4,10 @@ import aiHeadIcon from '../assets/image_head_seyfo.svg';
 import logoName from '../assets/logo-name.svg';
 import cariler_icon from '../assets/cariler_icon.svg';
 import dashboard_icon from '../assets/dashboard_icon.svg';
-import notifications_icon from '../assets/notifications_icon.svg';
 import veriyonetimi_icon from '../assets/veriyonetimi_icon.svg';
+import NotificationDropdown from './NotificationDropdown';
 
-export default function Navbar({ view, setView, onLogout, onInitialBalance, onProfileSettings, onAiChatToggle, userName = 'Kevin' }) {
+export default function Navbar({ view, setView, onLogout, onInitialBalance, onProfileSettings, onAiChatToggle, userName = 'Kevin', token, notifications = [], unreadNotificationCount = 0, onRefreshNotifications }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const userInitial = userName?.charAt(0)?.toUpperCase() || 'K';
 
@@ -46,9 +46,12 @@ export default function Navbar({ view, setView, onLogout, onInitialBalance, onPr
 
         <div className={styles.divider} />
 
-        <button className={styles.iconButton}>
-          <img src={notifications_icon} alt="Notifications" style={{ width: '20px', height: '20px' }} />
-        </button>
+        <NotificationDropdown
+          token={token}
+          notifications={notifications}
+          unreadCount={unreadNotificationCount}
+          onRefresh={onRefreshNotifications}
+        />
 
         <button 
           className={styles.iconButton} 
